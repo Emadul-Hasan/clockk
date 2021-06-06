@@ -1,7 +1,10 @@
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/models/taskmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class MyCheckList extends StatefulWidget {
   static const id = "MyCheckList";
@@ -45,6 +48,37 @@ class _StuffInTilesState extends State<StuffInTiles> {
     return _buildTiles(widget.myTile);
   }
 
+  _onAlertWithCustomContentPressed(context, String subtask) {
+    Alert(
+        context: context,
+        title: "Post Comment",
+        content: Column(
+          children: <Widget>[
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                icon: Icon(MdiIcons.message),
+                labelText: 'Comment',
+              ),
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            width: 60.0,
+            color: Colors.lightBlueAccent,
+            onPressed: () {
+              print(subtask);
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Send",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          )
+        ]).show();
+  }
+
   Widget _buildTiles(MyTile t) {
     if (t.children.isEmpty)
       return new ListTile(
@@ -58,6 +92,7 @@ class _StuffInTilesState extends State<StuffInTiles> {
             onChanged: (value) {
               setState(() {
                 t.isDone = !t.isDone;
+                _onAlertWithCustomContentPressed(context, t.title);
               });
             },
           ),

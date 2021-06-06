@@ -3,6 +3,7 @@ import 'package:clockk/screens/mychecklist.dart';
 import 'package:clockk/screens/rota.dart';
 import 'package:clockk/screens/teamchecklist.dart';
 import 'package:clockk/screens/test.dart';
+import 'package:clockk/screens/timesheet.dart';
 import 'screens/dashboard.dart';
 import 'screens/splashscreen.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         MyCheckList.id: (context) => MyCheckList(),
         TeamCheckList.id: (context) => TeamCheckList(),
         Rota.id: (context) => Rota(),
+        TimeSheet.id: (context) => TimeSheet(),
       },
     );
   }

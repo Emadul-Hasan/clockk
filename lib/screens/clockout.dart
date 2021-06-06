@@ -1,6 +1,8 @@
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/custom_component/inputfield.dart';
+import 'package:clockk/utilities/constant.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 
 class ClockOut extends StatefulWidget {
@@ -23,41 +25,64 @@ class _ClockOutState extends State<ClockOut> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 16.0, right: 16.0, top: 0.0, bottom: 0.0),
-                child: Container(
-                  width: 250.0,
-                  height: 40,
-                  padding: EdgeInsets.only(right: 15.0, left: 18.0),
-                  decoration: BoxDecoration(
-                      border:
-                          Border.all(color: Colors.lightBlueAccent, width: 1),
-                      borderRadius: BorderRadius.circular(5.0)),
-                  child: DropdownButton(
-                    underline: SizedBox(),
-                    icon: Icon(Icons.arrow_drop_down),
-                    iconSize: 30.0,
-                    isExpanded: true,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16.0,
+              Container(
+                width: 250.0,
+                height: 40,
+                padding: EdgeInsets.only(
+                    top: 0.0, bottom: 0.0, right: 0.0, left: 5.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.lightBlueAccent, width: 1),
+                    borderRadius: BorderRadius.circular(5.0)),
+                child: DropdownSearch(
+                  dropdownSearchDecoration: InputDecoration(
+                    contentPadding: EdgeInsets.only(
+                        left: 5.0, right: 0.0, top: 0.0, bottom: 0.0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(0.0),
+                      ),
                     ),
-                    hint: Text("User Name"),
-                    value: valueChoosen,
-                    onChanged: (newvalue) {
-                      setState(() {
-                        valueChoosen = newvalue;
-                        print(newvalue);
-                      });
-                    },
-                    items: DropDownItems.map((valueItem) {
-                      return DropdownMenuItem(
-                        value: valueItem,
-                        child: Text(valueItem),
-                      );
-                    }).toList(),
+                    enabledBorder: KoutlineInputBorderDrop,
+                    focusedBorder: KoutlineInputBorderDrop,
                   ),
+
+                  hint: "User Name",
+                  mode: Mode.DIALOG,
+                  showSearchBox: true,
+                  selectedItem: valueChoosen,
+                  showClearButton: true,
+                  showAsSuffixIcons: false,
+
+                  onChanged: (value) {
+                    setState(() {
+                      valueChoosen = value;
+                    });
+                  },
+                  items: DropDownItems,
+
+////////////////////////////////////////////////
+                  // underline: SizedBox(),
+                  // icon: Icon(Icons.arrow_drop_down),
+                  // iconSize: 30.0,
+                  // isExpanded: true,
+                  // style: TextStyle(
+                  //   color: Colors.black,
+                  //   fontSize: 16.0,
+                  // ),
+                  // hint: Text("User Name"),
+                  // value: valueChoosen,
+                  // onChanged: (newvalue) {
+                  //   setState(() {
+                  //     valueChoosen = newvalue;
+                  //     print(newvalue);
+                  //   });
+                  // },
+                  // items: DropDownItems.map((valueItem) {
+                  //   return DropdownMenuItem(
+                  //     value: valueItem,
+                  //     child: Text(valueItem),
+                  //   );
+                  // }).toList(),
                 ),
               ),
               Inputfield(

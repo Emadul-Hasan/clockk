@@ -4,6 +4,7 @@ class MyTile {
   String title;
   List<MyTile> children;
   bool isDone;
+
   MyTile(this.title, this.isDone, [this.children = const <MyTile>[]]);
   void toggleDone() {
     isDone = !isDone;

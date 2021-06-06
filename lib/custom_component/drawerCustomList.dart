@@ -5,6 +5,7 @@ import 'package:clockk/screens/login.dart';
 import 'package:clockk/screens/mychecklist.dart';
 import 'package:clockk/screens/rota.dart';
 import 'package:clockk/screens/teamchecklist.dart';
+import 'package:clockk/screens/timesheet.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -92,7 +93,7 @@ class DrawerCustomList extends StatelessWidget {
                 menuTitle: 'Time sheet',
                 icon: MdiIcons.calendarOutline,
                 action: () {
-                  print("PC");
+                  Navigator.pushReplacementNamed(context, TimeSheet.id);
                 }),
             CustomListTile(
                 menuTitle: 'Logout',

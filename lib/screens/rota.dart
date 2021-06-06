@@ -16,8 +16,32 @@ class _RotaState extends State<Rota> {
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("Rota")),
       body: SfCalendar(
-        view: CalendarView.month,
+        view: CalendarView.week,
+        firstDayOfWeek: 6,
+        dataSource: MeetingDataSource(getAppointments()),
       ),
     );
+  }
+}
+
+List<Appointment> getAppointments() {
+  List<Appointment> meetings = [];
+  final DateTime toDay = DateTime.now();
+  final DateTime startTime =
+      DateTime(toDay.year, toDay.month, toDay.day, 11, 0, 0);
+  final DateTime endTime = startTime.add(const Duration(hours: 3));
+  meetings.add(Appointment(
+      startTime: startTime,
+      endTime: endTime,
+      subject: "Task 1",
+      color: Colors.green,
+      recurrenceRule: "FREQ=DAILY;COUNT=5"));
+
+  return meetings;
+}
+
+class MeetingDataSource extends CalendarDataSource {
+  MeetingDataSource(List<Appointment> source) {
+    appointments = source;
   }
 }
