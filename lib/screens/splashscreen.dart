@@ -1,7 +1,6 @@
 import 'dart:async';
-
-import 'dashboard.dart';
 import 'package:flutter/material.dart';
+import 'login.dart';
 
 class SplashScreen extends StatefulWidget {
   static const String id = 'splashScreen';
@@ -14,8 +13,8 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Timer(Duration(seconds: 2), () {
-      Navigator.pushReplacementNamed(context, DashBoard.id);
+    Timer(Duration(seconds: 3), () {
+      Navigator.pushReplacementNamed(context, Login.id);
     });
   }
 
@@ -25,7 +24,9 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white,
       body: Center(
         child: Image(
-          image: AssetImage('images/logo.png'),
+          image: AssetImage(
+            'images/logo.png',
+          ),
           width: 200.0,
         ),
       ),

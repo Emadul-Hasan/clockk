@@ -1,5 +1,6 @@
 import 'package:clockk/screens/clockout.dart';
 import 'package:clockk/screens/mychecklist.dart';
+import 'package:clockk/screens/profile.dart';
 import 'package:clockk/screens/rota.dart';
 import 'package:clockk/screens/teamchecklist.dart';
 import 'package:clockk/screens/test.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: Rota.id,
+      initialRoute: SplashScreen.id,
       routes: {
         SplashScreen.id: (context) => SplashScreen(),
         Login.id: (context) => Login(),
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
         TeamCheckList.id: (context) => TeamCheckList(),
         Rota.id: (context) => Rota(),
         TimeSheet.id: (context) => TimeSheet(),
+        ProfileScreen.id: (context) => ProfileScreen(),
       },
     );
   }

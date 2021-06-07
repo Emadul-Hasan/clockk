@@ -3,6 +3,7 @@ import 'package:clockk/screens/clockout.dart';
 import 'package:clockk/screens/dashboard.dart';
 import 'package:clockk/screens/login.dart';
 import 'package:clockk/screens/mychecklist.dart';
+import 'package:clockk/screens/profile.dart';
 import 'package:clockk/screens/rota.dart';
 import 'package:clockk/screens/teamchecklist.dart';
 import 'package:clockk/screens/timesheet.dart';
@@ -87,7 +88,7 @@ class DrawerCustomList extends StatelessWidget {
                 menuTitle: 'Profile',
                 icon: MdiIcons.accountOutline,
                 action: () {
-                  print("PC");
+                  Navigator.pushReplacementNamed(context, ProfileScreen.id);
                 }),
             CustomListTile(
                 menuTitle: 'Time sheet',
