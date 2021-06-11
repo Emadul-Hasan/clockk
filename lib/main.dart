@@ -1,5 +1,6 @@
 import 'package:clockk/screens/clockout.dart';
 import 'package:clockk/screens/mychecklist.dart';
+import 'package:clockk/screens/passrecoverypage.dart';
 import 'package:clockk/screens/profile.dart';
 import 'package:clockk/screens/rota.dart';
 import 'package:clockk/screens/teamchecklist.dart';
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
         Rota.id: (context) => Rota(),
         TimeSheet.id: (context) => TimeSheet(),
         ProfileScreen.id: (context) => ProfileScreen(),
+        PassRecovery.id: (context) => PassRecovery(),
       },
     );
   }

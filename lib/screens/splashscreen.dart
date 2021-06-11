@@ -13,7 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Timer(Duration(seconds: 3), () {
+    Timer(Duration(seconds: 7), () {
       Navigator.pushReplacementNamed(context, Login.id);
     });
   }
@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Image(
           image: AssetImage(
-            'images/logo.png',
+            'images/logo.gif',
           ),
           width: 200.0,
         ),

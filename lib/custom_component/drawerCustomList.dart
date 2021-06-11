@@ -41,7 +41,7 @@ class DrawerCustomList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("User Name"),
-                      Text("user@gmail.com"),
+                      Text("Company Name"),
                     ],
                   )
                 ],
@@ -51,50 +51,58 @@ class DrawerCustomList extends StatelessWidget {
               menuTitle: 'Dashboard',
               icon: MdiIcons.dotsGrid,
               action: () {
-                Navigator.pushReplacementNamed(context, DashBoard.id);
+                Navigator.of(context).pop();
+                Navigator.pushNamed(context, DashBoard.id);
               },
             ),
             CustomListTile(
                 menuTitle: 'Clock in',
                 icon: MdiIcons.clockCheckOutline,
                 action: () {
-                  Navigator.pushReplacementNamed(context, ClockIn.id);
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, ClockIn.id);
                 }),
             CustomListTile(
                 menuTitle: 'Clock out',
                 icon: MdiIcons.clockFast,
                 action: () {
-                  Navigator.pushReplacementNamed(context, ClockOut.id);
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, ClockOut.id);
                 }),
             CustomListTile(
                 menuTitle: 'My Task List',
                 icon: MdiIcons.formatListChecks,
                 action: () {
-                  Navigator.pushReplacementNamed(context, MyCheckList.id);
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, MyCheckList.id);
                 }),
             CustomListTile(
                 menuTitle: 'Team Task List',
                 icon: MdiIcons.formatListCheckbox,
                 action: () {
-                  Navigator.pushReplacementNamed(context, TeamCheckList.id);
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, TeamCheckList.id);
                 }),
             CustomListTile(
                 menuTitle: 'Rota',
                 icon: MdiIcons.calendarClockOutline,
                 action: () {
-                  Navigator.pushReplacementNamed(context, Rota.id);
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, Rota.id);
                 }),
             CustomListTile(
                 menuTitle: 'Profile',
                 icon: MdiIcons.accountOutline,
                 action: () {
-                  Navigator.pushReplacementNamed(context, ProfileScreen.id);
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, ProfileScreen.id);
                 }),
             CustomListTile(
                 menuTitle: 'Time sheet',
                 icon: MdiIcons.calendarOutline,
                 action: () {
-                  Navigator.pushReplacementNamed(context, TimeSheet.id);
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, TimeSheet.id);
                 }),
             CustomListTile(
                 menuTitle: 'Logout',

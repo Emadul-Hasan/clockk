@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const KFieldWidth = 250.0;
+const KFieldWidth = 280.0;
 const KFieldHeight = 40.0;
 
 const KoutlineInputBorder = OutlineInputBorder(

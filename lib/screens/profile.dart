@@ -1,8 +1,13 @@
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/screens/timesheet.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+import 'dashboard.dart';
+import 'login.dart';
 
 class ProfileScreen extends StatelessWidget {
   static String id = "ProfileScreen";
@@ -17,6 +22,117 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class Body extends StatelessWidget {
+  _onAlertPasswordChange(context) {
+    Alert(
+        context: context,
+        title: "Change Password",
+        content: Column(
+          children: <Widget>[
+            Inputfield(
+              obscuretext: true,
+              margin: 10.0,
+              hintText: 'Enter old password',
+              prefixicon: Icon(Icons.lock),
+              function: (value) {
+                print(value);
+              },
+            ),
+            Inputfield(
+              obscuretext: true,
+              margin: 10.0,
+              hintText: 'Enter new password',
+              prefixicon: Icon(Icons.lock),
+              function: (value) {
+                print(value);
+              },
+            ),
+            Inputfield(
+              obscuretext: true,
+              margin: 10.0,
+              hintText: 'Confirm new password',
+              prefixicon: Icon(Icons.lock),
+              function: (value) {
+                print(value);
+              },
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            width: 100.0,
+            color: Colors.lightBlueAccent,
+            onPressed: () {
+              print("pressed");
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Confirm",
+              style: TextStyle(color: Colors.white, fontSize: 15),
+            ),
+          )
+        ]).show();
+  }
+
+  _onAlertProfileChange(context) {
+    Alert(
+        context: context,
+        title: "Change Profile",
+        content: Column(
+          children: <Widget>[
+            Inputfield(
+              obscuretext: true,
+              margin: 10.0,
+              hintText: 'Your Name',
+              prefixicon: Icon(MdiIcons.accountOutline),
+              function: (value) {
+                print(value);
+              },
+            ),
+            Inputfield(
+              obscuretext: true,
+              margin: 10.0,
+              hintText: 'Your phone number',
+              prefixicon: Icon(MdiIcons.phoneOutline),
+              function: (value) {
+                print(value);
+              },
+            ),
+            Inputfield(
+              obscuretext: true,
+              margin: 10.0,
+              hintText: 'Email',
+              prefixicon: Icon(MdiIcons.emailOutline),
+              function: (value) {
+                print(value);
+              },
+            ),
+            Inputfield(
+              obscuretext: true,
+              margin: 10.0,
+              hintText: 'Adress',
+              prefixicon: Icon(MdiIcons.mapMarkerOutline),
+              function: (value) {
+                print(value);
+              },
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            width: 100.0,
+            color: Colors.lightBlueAccent,
+            onPressed: () {
+              print("pressed");
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Confirm",
+              style: TextStyle(color: Colors.white, fontSize: 15),
+            ),
+          )
+        ]).show();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -26,31 +142,40 @@ class Body extends StatelessWidget {
           ProfilePic(),
           SizedBox(height: 20),
           ProfileMenu(
-            text: "Dashboard",
-            icon: MdiIcons.dotsGrid,
-            press: () => {},
-          ),
+              text: "Dashboard",
+              icon: MdiIcons.dotsGrid,
+              press: () {
+                Navigator.pushNamed(context, DashBoard.id);
+              }),
           ProfileMenu(
             text: "Time sheet",
             icon: MdiIcons.calendarOutline,
             press: () {
-              Navigator.pushReplacementNamed(context, TimeSheet.id);
+              Navigator.pushNamed(context, TimeSheet.id);
             },
           ),
           ProfileMenu(
             text: "Change password",
             icon: MdiIcons.onepassword,
-            press: () {},
+            icon2: Icons.edit,
+            press: () {
+              _onAlertPasswordChange(context);
+            },
           ),
           ProfileMenu(
-            text: "Help Center",
-            icon: MdiIcons.help,
-            press: () {},
+            text: "Change profile",
+            icon: MdiIcons.accountOutline,
+            icon2: Icons.edit,
+            press: () {
+              _onAlertProfileChange(context);
+            },
           ),
           ProfileMenu(
             text: "Log Out",
             icon: MdiIcons.logout,
-            press: () {},
+            press: () {
+              Navigator.pushNamed(context, Login.id);
+            },
           ),
         ],
       ),
@@ -59,16 +184,18 @@ class Body extends StatelessWidget {
 }
 
 class ProfileMenu extends StatelessWidget {
-  const ProfileMenu({
-    Key key,
-    @required this.text,
-    @required this.icon,
-    this.press,
-  }) : super(key: key);
+  const ProfileMenu(
+      {Key key,
+      @required this.text,
+      @required this.icon,
+      this.press,
+      this.icon2})
+      : super(key: key);
 
   final String text;
   final IconData icon;
   final VoidCallback press;
+  final IconData icon2;
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +211,7 @@ class ProfileMenu extends StatelessWidget {
             Icon(icon),
             SizedBox(width: 20),
             Expanded(child: Text(text)),
-            Icon(Icons.arrow_forward_ios),
+            Icon(icon2),
           ],
         ),
       ),
@@ -113,8 +240,8 @@ class ProfilePic extends StatelessWidget {
             right: -16,
             bottom: 0,
             child: SizedBox(
-              height: 46,
-              width: 46,
+              height: 50,
+              width: 50,
               child: FlatButton(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
@@ -122,12 +249,13 @@ class ProfilePic extends StatelessWidget {
                 ),
                 color: Color(0xFFF5F6F9),
                 onPressed: () {},
-                child: Image(
-                  image: AssetImage("images/prof.png"),
+                child: Icon(
+                  MdiIcons.camera,
+                  size: 20.0,
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

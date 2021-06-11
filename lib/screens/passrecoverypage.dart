@@ -1,15 +1,16 @@
 import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/screens/dashboard.dart';
-import 'package:clockk/screens/passrecoverypage.dart';
 import 'package:flutter/material.dart';
 
-class Login extends StatefulWidget {
-  static const id = "Login";
+import 'login.dart';
+
+class PassRecovery extends StatefulWidget {
+  static const id = "PassRecovery";
   @override
-  _LoginState createState() => _LoginState();
+  _PassRecoveryState createState() => _PassRecoveryState();
 }
 
-class _LoginState extends State<Login> {
+class _PassRecoveryState extends State<PassRecovery> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,23 +39,14 @@ class _LoginState extends State<Login> {
             },
           ),
         ),
-        Inputfield(
-          obscuretext: true,
-          margin: 10.0,
-          hintText: 'Enter Your Password',
-          prefixicon: Icon(Icons.lock),
-          function: (value) {
-            print(value);
-          },
-        ),
         Container(
           padding: EdgeInsets.only(top: 10.0),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               primary: Color(0xFF55A1CD),
-              padding: EdgeInsets.fromLTRB(120.0, 10.0, 120.0, 10.0),
+              padding: EdgeInsets.fromLTRB(85.0, 10.0, 85.0, 10.0),
             ),
-            child: Text("Login"),
+            child: Text("Reset Password..."),
             onPressed: () {
               Navigator.pushReplacementNamed(context, DashBoard.id);
             },
@@ -64,10 +56,11 @@ class _LoginState extends State<Login> {
           margin: EdgeInsets.only(left: 150.0),
           child: TextButton(
             onPressed: () {
-              Navigator.pushNamed(context, PassRecovery.id);
+              Navigator.pushNamed(context, Login.id);
             },
             child: Text(
-              "Forget Password?",
+              "Remember Password?",
+              textAlign: TextAlign.center,
             ),
           ),
         )
