@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:clockk/screens/dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session/flutter_session.dart';
 import 'login.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -13,13 +15,22 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Timer(Duration(seconds: 7), () {
-      Navigator.pushReplacementNamed(context, Login.id);
+
+    Timer(Duration(seconds: 7), () async {
+      dynamic token = await FlutterSession().get('token');
+      if (token == null || token == '') {
+        print(token);
+        Navigator.pushReplacementNamed(context, Login.id);
+      } else {
+        Navigator.pushReplacementNamed(context, DashBoard.id);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    WidgetsFlutterBinding.ensureInitialized();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(

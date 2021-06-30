@@ -1,8 +1,11 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/screens/timesheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session/flutter_session.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
@@ -21,7 +24,50 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class Body extends StatelessWidget {
+class Body extends StatefulWidget {
+  @override
+  _BodyState createState() => _BodyState();
+}
+
+class _BodyState extends State<Body> {
+  String name = 'N/A';
+  String email = 'N/A';
+  var id;
+  String company = 'N/A';
+  String address = 'N/A';
+  var phone;
+
+  Future<void> getProfileData() async {
+    var token = await FlutterSession().get('token');
+    String webUrl = "https://clockk.in/api/my_profile";
+    var url = Uri.parse(webUrl);
+    print(webUrl);
+
+    try {
+      http.Response response = await http.get(url, headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token
+      });
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        print(data);
+        var value = data['data'];
+        name = value['name'];
+        email = value['email'];
+        id = value['id'];
+        company = value['company_name'];
+        phone = value['phone'];
+        address = value['address'];
+      } else {
+        print(response.statusCode);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   _onAlertPasswordChange(context) {
     Alert(
         context: context,
@@ -80,39 +126,42 @@ class Body extends StatelessWidget {
         content: Column(
           children: <Widget>[
             Inputfield(
-              obscuretext: true,
+              obscuretext: false,
               margin: 10.0,
-              hintText: 'Your Name',
+              hintText: '${name == 'N/A' ? "Enter your name" : name}',
               prefixicon: Icon(MdiIcons.accountOutline),
               function: (value) {
-                print(value);
+                if (value != null) {
+                  name = value;
+                } else {
+                  name = name;
+                }
               },
             ),
             Inputfield(
-              obscuretext: true,
+              obscuretext: false,
               margin: 10.0,
-              hintText: 'Your phone number',
+              hintText: '${phone == 'N/A' ? "Enter your contact" : phone}',
               prefixicon: Icon(MdiIcons.phoneOutline),
               function: (value) {
-                print(value);
+                if (value != null) {
+                  phone = value;
+                } else {
+                  phone = phone;
+                }
               },
             ),
             Inputfield(
-              obscuretext: true,
+              obscuretext: false,
               margin: 10.0,
-              hintText: 'Email',
-              prefixicon: Icon(MdiIcons.emailOutline),
-              function: (value) {
-                print(value);
-              },
-            ),
-            Inputfield(
-              obscuretext: true,
-              margin: 10.0,
-              hintText: 'Adress',
+              hintText: '${address == null ? "Enter your address" : address}',
               prefixicon: Icon(MdiIcons.mapMarkerOutline),
               function: (value) {
-                print(value);
+                if (value != null) {
+                  address = value;
+                } else {
+                  address = address;
+                }
               },
             ),
           ],
@@ -121,8 +170,30 @@ class Body extends StatelessWidget {
           DialogButton(
             width: 100.0,
             color: Colors.lightBlueAccent,
-            onPressed: () {
-              print("pressed");
+            onPressed: () async {
+              var token = await FlutterSession().get('token');
+              print(token);
+
+              String webUrl =
+                  "https://clockk.in/api/profile_update?name=$name&phone=$phone&address=$address";
+              var url = Uri.parse(webUrl);
+              print(webUrl);
+
+              try {
+                http.Response response = await http.post(url, headers: {
+                  'Content-type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': token
+                });
+
+                if (response.statusCode == 200) {
+                  print("Updated");
+                } else {
+                  print(response.statusCode);
+                }
+              } catch (e) {
+                print(e);
+              }
               Navigator.pop(context);
             },
             child: Text(
@@ -131,6 +202,12 @@ class Body extends StatelessWidget {
             ),
           )
         ]).show();
+  }
+
+  @override
+  void initState() {
+    getProfileData();
+    super.initState();
   }
 
   @override
@@ -173,8 +250,10 @@ class Body extends StatelessWidget {
           ProfileMenu(
             text: "Log Out",
             icon: MdiIcons.logout,
-            press: () {
-              Navigator.pushNamed(context, Login.id);
+            press: () async {
+              print("Started");
+              await FlutterSession().set('token', '');
+              Navigator.pushReplacementNamed(context, Login.id);
             },
           ),
         ],
@@ -233,9 +312,19 @@ class ProfilePic extends StatelessWidget {
         fit: StackFit.expand,
         overflow: Overflow.visible,
         children: [
-          CircleAvatar(
-            backgroundImage: AssetImage("images/prof.png"),
-          ),
+          FutureBuilder(
+              future: FlutterSession().get('image'),
+              builder: (context, snapshot) {
+                // print(snapshot.data);
+                return CircleAvatar(
+                  radius: 28.0,
+                  backgroundImage:
+                      NetworkImage(snapshot.hasData ? snapshot.data : null),
+                  // child: Image(
+                  //   image: AssetImage('images/prof.png'),
+                  // ),
+                );
+              }),
           Positioned(
             right: -16,
             bottom: 0,

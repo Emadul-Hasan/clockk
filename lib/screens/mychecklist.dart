@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/models/taskmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session/flutter_session.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:http/http.dart' as http;
 
 class MyCheckList extends StatefulWidget {
   static const id = "MyCheckList";
@@ -13,6 +17,36 @@ class MyCheckList extends StatefulWidget {
 }
 
 class _MyCheckListState extends State<MyCheckList> {
+  Future<void> getTaskData() async {
+    var token = await FlutterSession().get('token');
+    String webUrl = "https://clockk.in/api/team_check_list";
+    var url = Uri.parse(webUrl);
+    print(webUrl);
+
+    try {
+      http.Response response = await http.get(url, headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token
+      });
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        print(data);
+      } else {
+        print(response.statusCode);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
+  void initState() {
+    getTaskData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     // listOfTiles

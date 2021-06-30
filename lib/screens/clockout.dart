@@ -1,7 +1,11 @@
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session/flutter_session.dart';
 import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class ClockOut extends StatefulWidget {
   static const id = "ClockOut";
@@ -44,6 +48,32 @@ class _ClockOutState extends State<ClockOut> {
     });
   }
 
+  _onSuccessToClockOut(context) {
+    Alert(
+        context: context,
+        title: "Success",
+        closeIcon: Icon(MdiIcons.close),
+        content: Center(
+          child: Text(
+            "Clocked Out",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.normal),
+          ),
+        ),
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Done",
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          )
+        ]).show();
+  }
+
   @override
   Widget build(BuildContext context) {
     int monthNumber = timeNow.month;
@@ -83,23 +113,34 @@ class _ClockOutState extends State<ClockOut> {
               ),
               Container(
                 width: 250.0,
-                child: Text(
-                  "Nur Karim",
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.bold,
-                    // color: Color(0xFF55A1CD),
-                  ),
-                ),
+                child: FutureBuilder(
+                    future: FlutterSession().get('name'),
+                    builder: (context, snapshot) {
+                      // print(snapshot.data);
+                      return Text(
+                        snapshot.hasData ? snapshot.data : "User name missing",
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
+                          // color: Color(0xFF55A1CD),
+                        ),
+                      );
+                    }),
                 alignment: Alignment.center,
               ),
               Container(
                 width: 250.0,
                 padding: EdgeInsets.only(top: 10.0),
-                child: Text(
-                  "Manager",
-                  style: TextStyle(color: Color(0xFF55A1CD)),
-                ),
+                child: FutureBuilder(
+                    future: FlutterSession().get('designation'),
+                    builder: (context, snapshot) {
+                      // print(snapshot.data);
+                      return Text(
+                          snapshot.hasData ? snapshot.data : "Loading...",
+                          style: TextStyle(
+                            color: Color(0xFF55A1CD),
+                          ));
+                    }),
                 alignment: Alignment.center,
               ),
               SizedBox(
@@ -113,8 +154,28 @@ class _ClockOutState extends State<ClockOut> {
                     padding: EdgeInsets.fromLTRB(100.0, 10.0, 100.0, 10.0),
                   ),
                   child: Text("Clock out"),
-                  onPressed: () {
-                    print("Pressed");
+                  onPressed: () async {
+                    var token = await FlutterSession().get('token');
+
+                    String webUrl = "https://clockk.in/api/clock_out";
+                    var url = Uri.parse(webUrl);
+                    print(webUrl);
+
+                    try {
+                      http.Response response = await http.post(url, headers: {
+                        'Content-type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': token
+                      });
+
+                      if (response.statusCode == 200) {
+                        _onSuccessToClockOut(context);
+                      } else {
+                        print(response.statusCode);
+                      }
+                    } catch (e) {
+                      print(e);
+                    }
                   },
                 ),
               )

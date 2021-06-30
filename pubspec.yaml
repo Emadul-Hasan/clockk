@@ -18,8 +18,14 @@ dependencies:
   cupertino_icons: ^1.0.2
   material_design_icons_flutter: ^4.0.5955
   syncfusion_flutter_calendar: ^19.1.66
-  dropdown_search: ^0.6.1
+  flutter_session: ^0.1.1
   rflutter_alert: ^2.0.2
+  http: ^0.13.3
+  modal_progress_hud_nsn: ^0.1.0-nullsafety-1
+  geolocator: ^6.2.1
+
+
+
 
 dev_dependencies:
   flutter_test:

@@ -8,13 +8,19 @@ import 'package:clockk/screens/rota.dart';
 import 'package:clockk/screens/teamchecklist.dart';
 import 'package:clockk/screens/timesheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session/flutter_session.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class DrawerCustomList extends StatelessWidget {
+class DrawerCustomList extends StatefulWidget {
   const DrawerCustomList({
     Key key,
   }) : super(key: key);
 
+  @override
+  _DrawerCustomListState createState() => _DrawerCustomListState();
+}
+
+class _DrawerCustomListState extends State<DrawerCustomList> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -25,13 +31,19 @@ class DrawerCustomList extends StatelessWidget {
             DrawerHeader(
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 28.0,
-                    backgroundImage: AssetImage('images/prof.png'),
-                    // child: Image(
-                    //   image: AssetImage('images/prof.png'),
-                    // ),
-                  ),
+                  FutureBuilder(
+                      future: FlutterSession().get('image'),
+                      builder: (context, snapshot) {
+                        // print(snapshot.data);
+                        return CircleAvatar(
+                          radius: 28.0,
+                          backgroundImage: NetworkImage(
+                              snapshot.hasData ? snapshot.data : null),
+                          // child: Image(
+                          //   image: AssetImage('images/prof.png'),
+                          // ),
+                        );
+                      }),
                   SizedBox(
                     width: 10.0,
                     height: double.infinity,
@@ -40,8 +52,22 @@ class DrawerCustomList extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("User Name"),
-                      Text("Company Name"),
+                      FutureBuilder(
+                          future: FlutterSession().get('name'),
+                          builder: (context, snapshot) {
+                            // print(snapshot.data);
+                            return Text(snapshot.hasData
+                                ? snapshot.data
+                                : "User name missing");
+                          }),
+                      FutureBuilder(
+                          future: FlutterSession().get('company_name'),
+                          builder: (context, snapshot) {
+                            // print(snapshot.data);
+                            return Text(snapshot.hasData
+                                ? snapshot.data
+                                : "User name missing");
+                          }),
                     ],
                   )
                 ],
@@ -107,7 +133,9 @@ class DrawerCustomList extends StatelessWidget {
             CustomListTile(
                 menuTitle: 'Logout',
                 icon: MdiIcons.logout,
-                action: () {
+                action: () async {
+                  print("Started");
+                  await FlutterSession().set('token', '');
                   Navigator.pushReplacementNamed(context, Login.id);
                 }),
           ],

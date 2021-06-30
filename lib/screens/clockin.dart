@@ -1,12 +1,14 @@
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
-import 'package:clockk/custom_component/inputfield.dart';
-import 'package:clockk/utilities/constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter_session/flutter_session.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class ClockIn extends StatefulWidget {
   static const id = "ClockIn";
@@ -15,12 +17,27 @@ class ClockIn extends StatefulWidget {
 }
 
 class _ClockInState extends State<ClockIn> {
-  // List<String> DropDownItems = ["Azhar", "Beauty", "Mujib"];
-  // String valueChoosen;
   @override
   void initState() {
+    getcurrentlocation();
     Timer.periodic(Duration(seconds: 1), (Timer t) => timeUpdate());
     super.initState();
+  }
+
+  double latitube;
+  double longitude;
+
+  Future<void> getcurrentlocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.low);
+      latitube = position.latitude;
+      longitude = position.longitude;
+      print(latitube);
+      print(longitude);
+    } catch (e) {
+      print(e);
+    }
   }
 
   List<String> monthString = [
@@ -47,6 +64,32 @@ class _ClockInState extends State<ClockIn> {
       timeNow = DateTime.now();
       formattedTime = "${timeNow.hour}:${timeNow.minute}:${timeNow.second}";
     });
+  }
+
+  _onSuccessToClockin(context) {
+    Alert(
+        context: context,
+        title: "Success",
+        closeIcon: Icon(MdiIcons.close),
+        content: Center(
+          child: Text(
+            "Clocked in",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.normal),
+          ),
+        ),
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Done",
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          )
+        ]).show();
   }
 
   @override
@@ -88,23 +131,34 @@ class _ClockInState extends State<ClockIn> {
               ),
               Container(
                 width: 250.0,
-                child: Text(
-                  "Nur Karim",
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.bold,
-                    // color: Color(0xFF55A1CD),
-                  ),
-                ),
+                child: FutureBuilder(
+                    future: FlutterSession().get('name'),
+                    builder: (context, snapshot) {
+                      // print(snapshot.data);
+                      return Text(
+                        snapshot.hasData ? snapshot.data : "User name missing",
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
+                          // color: Color(0xFF55A1CD),
+                        ),
+                      );
+                    }),
                 alignment: Alignment.center,
               ),
               Container(
                 width: 250.0,
                 padding: EdgeInsets.only(top: 10.0),
-                child: Text(
-                  "Manager",
-                  style: TextStyle(color: Color(0xFF55A1CD)),
-                ),
+                child: FutureBuilder(
+                    future: FlutterSession().get('designation'),
+                    builder: (context, snapshot) {
+                      // print(snapshot.data);
+                      return Text(
+                          snapshot.hasData ? snapshot.data : "Loading...",
+                          style: TextStyle(
+                            color: Color(0xFF55A1CD),
+                          ));
+                    }),
                 alignment: Alignment.center,
               ),
               SizedBox(
@@ -118,8 +172,31 @@ class _ClockInState extends State<ClockIn> {
                     padding: EdgeInsets.fromLTRB(100.0, 10.0, 100.0, 10.0),
                   ),
                   child: Text("Clock in"),
-                  onPressed: () {
-                    print("Pressed");
+                  onPressed: () async {
+                    var token = await FlutterSession().get('token');
+                    print(token);
+
+                    String webUrl =
+                        "https://clockk.in/api/clock_in?lat=$latitube&long=$longitude";
+                    var url = Uri.parse(webUrl);
+                    print(webUrl);
+
+                    try {
+                      http.Response response = await http.post(url, headers: {
+                        'Content-type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': token
+                      });
+
+                      if (response.statusCode == 200) {
+                        print("Clocked in");
+                        _onSuccessToClockin(context);
+                      } else {
+                        print(response.statusCode);
+                      }
+                    } catch (e) {
+                      print(e);
+                    }
                   },
                 ),
               )
@@ -130,54 +207,3 @@ class _ClockInState extends State<ClockIn> {
     );
   }
 }
-// DropdownSearch(
-//                   dropdownSearchDecoration: InputDecoration(
-//                     contentPadding: EdgeInsets.only(
-//                         left: 5.0, right: 0.0, top: 0.0, bottom: 0.0),
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.all(
-//                         Radius.circular(0.0),
-//                       ),
-//                     ),
-//                     enabledBorder: KoutlineInputBorderDrop,
-//                     focusedBorder: KoutlineInputBorderDrop,
-//                   ),
-//
-//                   hint: "User Name",
-//                   mode: Mode.DIALOG,
-//                   showSearchBox: true,
-//                   selectedItem: valueChoosen,
-//                   showClearButton: true,
-//                   showAsSuffixIcons: false,
-//
-//                   onChanged: (value) {
-//                     setState(() {
-//                       valueChoosen = value;
-//                     });
-//                   },
-//                   items: DropDownItems,
-//
-// ////////////////////////////////////////////////
-//                   // underline: SizedBox(),
-//                   // icon: Icon(Icons.arrow_drop_down),
-//                   // iconSize: 30.0,
-//                   // isExpanded: true,
-//                   // style: TextStyle(
-//                   //   color: Colors.black,
-//                   //   fontSize: 16.0,
-//                   // ),
-//                   // hint: Text("User Name"),
-//                   // value: valueChoosen,
-//                   // onChanged: (newvalue) {
-//                   //   setState(() {
-//                   //     valueChoosen = newvalue;
-//                   //     print(newvalue);
-//                   //   });
-//                   // },
-//                   // items: DropDownItems.map((valueItem) {
-//                   //   return DropdownMenuItem(
-//                   //     value: valueItem,
-//                   //     child: Text(valueItem),
-//                   //   );
-//                   // }).toList(),
-//                 )

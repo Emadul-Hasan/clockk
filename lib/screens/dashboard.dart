@@ -1,6 +1,7 @@
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session/flutter_session.dart';
 
 class DashBoard extends StatefulWidget {
   static const id = "DashBoard";
@@ -10,6 +11,10 @@ class DashBoard extends StatefulWidget {
 
 class _DashBoardState extends State<DashBoard> {
   bool myChecklistCompleted = true;
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
