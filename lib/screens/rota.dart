@@ -27,12 +27,42 @@ class _RotaState extends State<Rota> {
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        print(data);
+        // print(data);
         var value = data['data'];
-        print(value);
+        // print(value);
         for (var item in value) {
-          print(item);
+          var date = item['date'].split('-');
+          var sTime = item['start_time'].split(':');
+          var eTime = item['end_time'].split(':');
+
           setState(() {
+            DateTime taskDateTimeStart = DateTime(
+              int.parse(date[0]),
+              int.parse(date[1]),
+              int.parse(date[2]),
+              int.parse(sTime[0]),
+              int.parse(sTime[1]),
+              int.parse(sTime[2]),
+            );
+            DateTime taskDateTimeEnd = DateTime(
+              int.parse(date[0]),
+              int.parse(date[1]),
+              int.parse(date[2]),
+              int.parse(eTime[0]),
+              int.parse(eTime[1]),
+              int.parse(eTime[2]),
+            );
+            meetings.add(Appointment(
+              startTime: taskDateTimeStart,
+              endTime: taskDateTimeEnd,
+              subject: '$taskDateTimeStart to $taskDateTimeEnd',
+              color: color[index],
+            ));
+            if (index == 3) {
+              index = 0;
+            } else {
+              index++;
+            }
             showSpinner = false;
           });
         }
@@ -44,21 +74,14 @@ class _RotaState extends State<Rota> {
     }
   }
 
+  int index = 0;
+  List<Color> color = [
+    Colors.green,
+    Colors.blue,
+    Colors.deepPurple,
+    Colors.orange
+  ];
   List<Appointment> meetings = [];
-  List<Appointment> getAppointments() {
-    final DateTime toDay = DateTime.now();
-    final DateTime startTime =
-        DateTime(toDay.year, toDay.month, toDay.day, 11, 0, 0);
-    final DateTime endTime = startTime.add(const Duration(hours: 3));
-    meetings.add(Appointment(
-        startTime: startTime,
-        endTime: endTime,
-        subject: "Task 1",
-        color: Colors.green,
-        recurrenceRule: "FREQ=DAILY;COUNT=5"));
-
-    return meetings;
-  }
 
   bool showSpinner = true;
 
@@ -74,9 +97,9 @@ class _RotaState extends State<Rota> {
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("Rota")),
       body: SfCalendar(
-        view: CalendarView.day,
+        view: CalendarView.week,
         firstDayOfWeek: 6,
-        dataSource: MeetingDataSource(getAppointments()),
+        dataSource: MeetingDataSource(meetings),
       ),
     );
   }
