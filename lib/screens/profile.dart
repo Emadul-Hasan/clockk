@@ -36,6 +36,9 @@ class _BodyState extends State<Body> {
   String company = 'N/A';
   String address = 'N/A';
   var phone;
+  String oldpass = '';
+  String newpass = '';
+  String confpass = '';
 
   Future<void> getProfileData() async {
     var token = await FlutterSession().get('token');
@@ -80,7 +83,7 @@ class _BodyState extends State<Body> {
               hintText: 'Enter old password',
               prefixicon: Icon(Icons.lock),
               function: (value) {
-                print(value);
+                oldpass = value;
               },
             ),
             Inputfield(
@@ -89,7 +92,7 @@ class _BodyState extends State<Body> {
               hintText: 'Enter new password',
               prefixicon: Icon(Icons.lock),
               function: (value) {
-                print(value);
+                newpass = value;
               },
             ),
             Inputfield(
@@ -98,7 +101,7 @@ class _BodyState extends State<Body> {
               hintText: 'Confirm new password',
               prefixicon: Icon(Icons.lock),
               function: (value) {
-                print(value);
+                confpass = value;
               },
             ),
           ],
@@ -107,12 +110,67 @@ class _BodyState extends State<Body> {
           DialogButton(
             width: 100.0,
             color: Colors.lightBlueAccent,
-            onPressed: () {
+            onPressed: () async {
               print("pressed");
-              Navigator.pop(context);
+              var token = await FlutterSession().get('token');
+              String webUrl =
+                  "https://clockk.in/api/password_change?old_password=$oldpass&password=$newpass&confirm_password=$confpass";
+              var url = Uri.parse(webUrl);
+              print(url);
+              try {
+                http.Response response = await http.post(url, headers: {
+                  'Content-type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': token
+                });
+
+                if (response.statusCode == 200) {
+                  print("Done");
+                  Navigator.pop(context);
+                  _onAlertPasswordChangeSuccessFail(
+                      context, "Success", MdiIcons.check, "Done", Colors.green);
+                } else {
+                  Navigator.pop(context);
+                  _onAlertPasswordChangeSuccessFail(context, "Failed",
+                      MdiIcons.close, "Try Again", Colors.red);
+                  print(response.statusCode);
+                }
+              } catch (e) {
+                print(e);
+                Navigator.pop(context);
+              }
             },
             child: Text(
               "Confirm",
+              style: TextStyle(color: Colors.white, fontSize: 15),
+            ),
+          )
+        ]).show();
+  }
+
+  _onAlertPasswordChangeSuccessFail(
+      context, String title, IconData icon, String Status, Color colors) {
+    Alert(
+        context: context,
+        title: title,
+        content: Column(
+          children: <Widget>[
+            Icon(
+              icon,
+              size: 35,
+              color: colors,
+            )
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            width: 100.0,
+            color: Colors.lightBlueAccent,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              Status,
               style: TextStyle(color: Colors.white, fontSize: 15),
             ),
           )
@@ -187,14 +245,20 @@ class _BodyState extends State<Body> {
                 });
 
                 if (response.statusCode == 200) {
-                  print("Updated");
+                  print("Done");
+                  Navigator.pop(context);
+                  _onAlertPasswordChangeSuccessFail(
+                      context, "Success", MdiIcons.check, "Done", Colors.green);
                 } else {
+                  Navigator.pop(context);
+                  _onAlertPasswordChangeSuccessFail(context, "Failed",
+                      MdiIcons.close, "Try Again", Colors.red);
                   print(response.statusCode);
                 }
               } catch (e) {
                 print(e);
+                Navigator.pop(context);
               }
-              Navigator.pop(context);
             },
             child: Text(
               "Confirm",
@@ -318,8 +382,9 @@ class ProfilePic extends StatelessWidget {
                 // print(snapshot.data);
                 return CircleAvatar(
                   radius: 28.0,
-                  backgroundImage:
-                      NetworkImage(snapshot.hasData ? snapshot.data : null),
+                  backgroundImage: snapshot.hasData
+                      ? NetworkImage(snapshot.data)
+                      : AssetImage('images/prof.png'),
                   // child: Image(
                   //   image: AssetImage('images/prof.png'),
                   // ),
