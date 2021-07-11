@@ -79,15 +79,15 @@ class _StuffInTilesState extends State<StuffInTiles> {
 }
 
 List<MyTile> listOfTiles = <MyTile>[
-  new MyTile('Task1', false, <MyTile>[
-    new MyTile("Sub task1", false),
-    new MyTile("Sub task2", false),
-    new MyTile("Sub task3", false),
+  new MyTile('Task1', false,'1', <MyTile>[
+    new MyTile("Sub task1", false,'1'),
+    new MyTile("Sub task2", false,'1'),
+    new MyTile("Sub task3", false,'1'),
   ]),
-  new MyTile('Task1', false, <MyTile>[
-    new MyTile("Sub task1", false),
-    new MyTile("Sub task2", false),
-    new MyTile("Sub task3", false),
+  new MyTile('Task1', false,'1', <MyTile>[
+    new MyTile("Sub task1", false,'1'),
+    new MyTile("Sub task2", false,'1'),
+    new MyTile("Sub task3", false,'1'),
   ]),
   // new MyTile(
   //   'Task 2',

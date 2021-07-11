@@ -1,8 +1,6 @@
 import 'dart:convert';
-
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
-import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/models/taskmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
@@ -32,7 +30,22 @@ class _MyCheckListState extends State<MyCheckList> {
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        print(data);
+        var allTask = data['data']['checklist'];
+
+        for(var item in allTask){
+          List<MyTile> subtasks= [];
+          for(var items in item['task'] ){
+            print(item['title']);
+            subtasks.add(new MyTile(items['name'].toString(), false,items['id'].toString()));
+            print(items);
+          }
+          setState(() {
+            listOfTiles.add(new MyTile(item['title'].toString(), false,item['id'].toString(), subtasks),
+            );
+          });
+
+        }
+
       } else {
         print(response.statusCode);
       }
@@ -49,8 +62,7 @@ class _MyCheckListState extends State<MyCheckList> {
 
   @override
   Widget build(BuildContext context) {
-    // listOfTiles
-    //     .add(MyTile("Task Name", <MyTile>[MyTile("Sub 1"), MyTile("Sub2")]));
+
     return Scaffold(
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("My Check List")),
@@ -148,61 +160,8 @@ class _StuffInTilesState extends State<StuffInTiles> {
 }
 
 List<MyTile> listOfTiles = <MyTile>[
-  new MyTile('Task1', false, <MyTile>[
-    new MyTile("Sub task1", false),
-    new MyTile("Sub task2", false),
-    new MyTile("Sub task3", false),
-  ]),
-  new MyTile('Task1', false, <MyTile>[
-    new MyTile("Sub task1", false),
-    new MyTile("Sub task2", false),
-    new MyTile("Sub task3", false),
-  ]),
-  // new MyTile(
-  //   'Task 2',
-  //   <MyTile>[
-  //     new MyTile('Sub 1'),
-  //     new MyTile('Sub 2'),
-  //   ],
-  // ),
-  // new MyTile(
-  //   'Task 3',
-  //   <MyTile>[
-  //     new MyTile('Sub 1'),
-  //     new MyTile('Sub 2'),
-  //     new MyTile('Sub 3'),
-  //   ],
-  // ),
+
+
 ];
 
-// class MyCheckList extends StatefulWidget {
-//   static const id = "MyCheckList";
-//   @override
-//   _MyCheckListState createState() => _MyCheckListState();
-// }
-//
-// class _MyCheckListState extends State<MyCheckList> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       drawer: DrawerCustomList(),
-//       appBar: CustomAppBar(Text("My Task List")),
-//       body: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Expanded(
-//               child: Container(
-//             decoration: BoxDecoration(
-//               color: Colors.white,
-//               borderRadius: BorderRadius.only(
-//                 topLeft: Radius.circular(20.0),
-//                 topRight: Radius.circular(20.0),
-//               ),
-//             ),
-//             child: TodoListView(),
-//           )),
-//         ],
-//       ),
-//     );
-//   }
-// }
+
