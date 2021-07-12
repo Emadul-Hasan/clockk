@@ -402,7 +402,9 @@ class ProfilePic extends StatelessWidget {
                   side: BorderSide(color: Colors.white),
                 ),
                 color: Color(0xFFF5F6F9),
-                onPressed: () {},
+                onPressed: () {
+                  
+                },
                 child: Icon(
                   MdiIcons.camera,
                   size: 20.0,

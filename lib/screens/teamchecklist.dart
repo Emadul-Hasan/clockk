@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/models/taskmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session/flutter_session.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class TeamCheckList extends StatefulWidget {
   static const id = "TeamCheckList";
@@ -10,25 +16,101 @@ class TeamCheckList extends StatefulWidget {
 }
 
 class _TeamCheckListState extends State<TeamCheckList> {
+
+  List<MyTile> listOfTiles = <MyTile>[];
+
+  Future<void> getTaskData() async {
+    var token = await FlutterSession().get('token');
+    String webUrl = "https://clockk.in/api/team_check_list";
+    var url = Uri.parse(webUrl);
+    print(webUrl);
+
+    try {
+      http.Response response = await http.get(url, headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token
+      });
+
+      if (response.statusCode == 200) {
+        try{
+          var data = jsonDecode(response.body);
+          print(data);
+          var allTask = data['data']['checklist'];
+
+          if(allTask != []){
+            for(var item in allTask){
+              print(item);
+              List<MyTile> subtasks= [];
+              if(item['task'] != []){
+                for(var items in item['task'] ){
+
+                  print(item['title']);
+                  subtasks.add(new MyTile(items['name'].toString(), false,items['id'].toString()));
+                  print(items);
+                }}
+              setState(() {
+                if(subtasks != []){
+                  listOfTiles.add(new MyTile(item['title'].toString(), false,item['id'].toString(), subtasks),
+                  );
+                }else if (subtasks != [] || allTask != []){
+                  listOfTiles.add(new MyTile(item['title'].toString()==''?"Untitled Task": item['title'].toString(), false,item['id'].toString()==''?'--':item['id'].toString(), subtasks),
+                  );
+                }
+              });
+            }
+          }
+
+
+        }catch(e){
+          print(e);
+        }
+
+      } else {
+        print(response.statusCode);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
+  void initState() {
+    getTaskData();
+    super.initState();
+  }
+  bool spinner = true;
   @override
   Widget build(BuildContext context) {
-    // listOfTiles
-    //     .add(MyTile("Task Name", <MyTile>[MyTile("Sub 1"), MyTile("Sub2")]));
+    setState(() {
+      if (listOfTiles.isNotEmpty){
+        spinner = false;
+      }
+    });
     return Scaffold(
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("Team Check List")),
-      body: new ListView.builder(
-        itemBuilder: (BuildContext context, int index) {
-          return new StuffInTiles(
-            listOfTiles[index],
-            listOfTiles[index].children[index].isDone,
-          );
-        },
-        itemCount: listOfTiles.length,
+      body: ModalProgressHUD(
+        inAsyncCall: spinner,
+        child: listOfTiles.isEmpty?Center(child: Text('No task found yet')): new ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            return listOfTiles[index].children.isEmpty? Card(
+              child: new StuffInTiles(
+                  listOfTiles[index],
+                  listOfTiles[index].isDone
+              ),
+            ): new StuffInTiles(
+              listOfTiles[index],
+              listOfTiles[index].children[index].isDone,
+            );
+          },
+          itemCount: listOfTiles.length,
+        ),
       ),
     );
   }
 }
+
 
 class StuffInTiles extends StatefulWidget {
   final MyTile myTile;
@@ -45,19 +127,84 @@ class _StuffInTilesState extends State<StuffInTiles> {
     return _buildTiles(widget.myTile);
   }
 
+  _onAlertWithCustomContentPressed(context, String subtaskID) {
+    String comment = '';
+    Alert(
+        context: context,
+        title: "Post Comment",
+        content: Column(
+          children: <Widget>[
+            TextField(
+              onChanged: (value){
+                comment = value;
+              },
+              obscureText: true,
+              decoration: InputDecoration(
+                icon: Icon(MdiIcons.message),
+                labelText: 'Comment',
+              ),
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            width: 60.0,
+            color: Colors.lightBlueAccent,
+            onPressed: () async{
+              Navigator.pop(context);
+              var token = await FlutterSession().get('token');
+              print(token);
+
+              String webUrl =
+                  "https://clockk.in/api/team_check_list_complete?task_id=$subtaskID&comment=${comment==''?' ': comment}";
+              var url = Uri.parse(webUrl);
+              print(webUrl);
+
+              try {
+                http.Response response = await http.post(url, headers: {
+                  'Content-type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': token
+                });
+
+                if (response.statusCode == 200) {
+                  print("Send");
+
+                } else {
+                  print(response.statusCode);
+                }
+              } catch (e) {
+                print(e);
+              }
+
+            },
+            child: Text(
+              "Send",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          )
+        ]).show();
+  }
+
   Widget _buildTiles(MyTile t) {
     if (t.children.isEmpty)
       return new ListTile(
           dense: true,
           enabled: true,
           isThreeLine: false,
-          onLongPress: () => print("long press"),
-          onTap: () => print(t.title),
+          // onLongPress: () => print("long press"),
+          onTap: () {
+            setState(() {
+              t.isDone = !t.isDone;
+              _onAlertWithCustomContentPressed(context, t.id);
+            });
+          },
           leading: Checkbox(
             value: t.isDone,
             onChanged: (value) {
               setState(() {
                 t.isDone = !t.isDone;
+                _onAlertWithCustomContentPressed(context, t.id);
               });
             },
           ),
@@ -78,30 +225,11 @@ class _StuffInTilesState extends State<StuffInTiles> {
   }
 }
 
-List<MyTile> listOfTiles = <MyTile>[
-  new MyTile('Task1', false,'1', <MyTile>[
-    new MyTile("Sub task1", false,'1'),
-    new MyTile("Sub task2", false,'1'),
-    new MyTile("Sub task3", false,'1'),
-  ]),
-  new MyTile('Task1', false,'1', <MyTile>[
-    new MyTile("Sub task1", false,'1'),
-    new MyTile("Sub task2", false,'1'),
-    new MyTile("Sub task3", false,'1'),
-  ]),
-  // new MyTile(
-  //   'Task 2',
-  //   <MyTile>[
-  //     new MyTile('Sub 1'),
-  //     new MyTile('Sub 2'),
-  //   ],
-  // ),
-  // new MyTile(
-  //   'Task 3',
-  //   <MyTile>[
-  //     new MyTile('Sub 1'),
-  //     new MyTile('Sub 2'),
-  //     new MyTile('Sub 3'),
-  //   ],
-  // ),
-];
+
+
+
+
+
+
+
+

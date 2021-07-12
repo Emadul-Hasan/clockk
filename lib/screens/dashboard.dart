@@ -16,11 +16,11 @@ class DashBoard extends StatefulWidget {
 class _DashBoardState extends State<DashBoard> {
   bool showSpinner = true;
   bool myChecklistCompleted = true;
-  String myCheckListNumber = '0';
-  String teamCheckListNumber = '0';
+  String myCheckListNumber = '-';
+  String teamCheckListNumber = '-';
   String taskCompleteNumber = '0';
-  String workedHour = '00:00:00';
-  String weeklyWorkedHour = '00:00:00';
+  String workedHour = '__:__:__';
+  String weeklyWorkedHour = '__:__:__';
   @override
   void initState() {
     getDashBoardData();
@@ -44,7 +44,7 @@ class _DashBoardState extends State<DashBoard> {
         var data = jsonDecode(response.body);
 
         var getData = data['data'];
-        // var getactualdata = getData[0];
+
         setState(() {
           myCheckListNumber = getData[0]['my_checklist'].toString();
           teamCheckListNumber = getData[0]['team_checklist'].toString();
