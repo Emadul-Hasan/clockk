@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/models/taskmodel.dart';
@@ -8,6 +7,7 @@ import 'package:flutter_session/flutter_session.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:http/http.dart' as http;
 
 class TeamCheckList extends StatefulWidget {
   static const id = "TeamCheckList";
@@ -16,6 +16,7 @@ class TeamCheckList extends StatefulWidget {
 }
 
 class _TeamCheckListState extends State<TeamCheckList> {
+
 
   List<MyTile> listOfTiles = <MyTile>[];
 
@@ -60,6 +61,10 @@ class _TeamCheckListState extends State<TeamCheckList> {
               });
             }
           }
+          setState(() {
+            listOfTiles.sort((a,b)=> a.children.length.compareTo(b.children.length));
+          });
+
 
 
         }catch(e){
@@ -82,11 +87,15 @@ class _TeamCheckListState extends State<TeamCheckList> {
   bool spinner = true;
   @override
   Widget build(BuildContext context) {
+
     setState(() {
       if (listOfTiles.isNotEmpty){
+        listOfTiles.sort((a,b)=> a.children.length.compareTo(b.children.length));
         spinner = false;
       }
     });
+
+
     return Scaffold(
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("Team Check List")),
@@ -94,6 +103,15 @@ class _TeamCheckListState extends State<TeamCheckList> {
         inAsyncCall: spinner,
         child: listOfTiles.isEmpty?Center(child: Text('No task found yet')): new ListView.builder(
           itemBuilder: (BuildContext context, int index) {
+            var childIndex = -1;
+            if (childIndex < listOfTiles[index].children.length){
+              childIndex++;
+            }
+            else{
+              childIndex = listOfTiles[index].children.length -1;
+            }
+            print(listOfTiles[index].children.length);
+
             return listOfTiles[index].children.isEmpty? Card(
               child: new StuffInTiles(
                   listOfTiles[index],
@@ -101,7 +119,7 @@ class _TeamCheckListState extends State<TeamCheckList> {
               ),
             ): new StuffInTiles(
               listOfTiles[index],
-              listOfTiles[index].children[index].isDone,
+              listOfTiles[index].children[childIndex].isDone,
             );
           },
           itemCount: listOfTiles.length,
@@ -111,9 +129,9 @@ class _TeamCheckListState extends State<TeamCheckList> {
   }
 }
 
-
 class StuffInTiles extends StatefulWidget {
   final MyTile myTile;
+
   bool currentState;
   StuffInTiles(this.myTile, this.currentState);
 
@@ -192,7 +210,7 @@ class _StuffInTilesState extends State<StuffInTiles> {
           dense: true,
           enabled: true,
           isThreeLine: false,
-          // onLongPress: () => print("long press"),
+          // onLongPress: () =>  _onAlertWithCustomContentPressed(context, t.id),
           onTap: () {
             setState(() {
               t.isDone = !t.isDone;
@@ -224,12 +242,6 @@ class _StuffInTilesState extends State<StuffInTiles> {
     );
   }
 }
-
-
-
-
-
-
 
 
 

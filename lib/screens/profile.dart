@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'dart:ui';
+import 'package:dio/dio.dart';
+import 'dart:io';
+import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
@@ -7,13 +11,22 @@ import 'package:clockk/screens/timesheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-
+import 'package:image_picker/image_picker.dart';
 import 'dashboard.dart';
 import 'login.dart';
 
-class ProfileScreen extends StatelessWidget {
+
+
+class ProfileScreen extends StatefulWidget {
   static String id = "ProfileScreen";
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,6 +52,7 @@ class _BodyState extends State<Body> {
   String oldpass = '';
   String newpass = '';
   String confpass = '';
+  bool showProfSpinner = true;
 
   Future<void> getProfileData() async {
     var token = await FlutterSession().get('token');
@@ -63,6 +77,10 @@ class _BodyState extends State<Body> {
         company = value['company_name'];
         phone = value['phone'];
         address = value['address'];
+        setState(() {
+          showProfSpinner = false;
+        });
+
       } else {
         print(response.statusCode);
       }
@@ -276,51 +294,55 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(vertical: 20),
-      child: Column(
-        children: [
-          ProfilePic(),
-          SizedBox(height: 20),
-          ProfileMenu(
-              text: "Dashboard",
-              icon: MdiIcons.dotsGrid,
+
+    return  ModalProgressHUD(
+      inAsyncCall: showProfSpinner,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          children: [
+            ProfilePic(showSpinner: showProfSpinner,),
+            SizedBox(height: 20),
+            ProfileMenu(
+                text: "Dashboard",
+                icon: MdiIcons.dotsGrid,
+                press: () {
+                  Navigator.pushNamed(context, DashBoard.id);
+                }),
+            ProfileMenu(
+              text: "Time sheet",
+              icon: MdiIcons.calendarOutline,
               press: () {
-                Navigator.pushNamed(context, DashBoard.id);
-              }),
-          ProfileMenu(
-            text: "Time sheet",
-            icon: MdiIcons.calendarOutline,
-            press: () {
-              Navigator.pushNamed(context, TimeSheet.id);
-            },
-          ),
-          ProfileMenu(
-            text: "Change password",
-            icon: MdiIcons.onepassword,
-            icon2: Icons.edit,
-            press: () {
-              _onAlertPasswordChange(context);
-            },
-          ),
-          ProfileMenu(
-            text: "Change profile",
-            icon: MdiIcons.accountOutline,
-            icon2: Icons.edit,
-            press: () {
-              _onAlertProfileChange(context);
-            },
-          ),
-          ProfileMenu(
-            text: "Log Out",
-            icon: MdiIcons.logout,
-            press: () async {
-              print("Started");
-              await FlutterSession().set('token', '');
-              Navigator.pushReplacementNamed(context, Login.id);
-            },
-          ),
-        ],
+                Navigator.pushNamed(context, TimeSheet.id);
+              },
+            ),
+            ProfileMenu(
+              text: "Change password",
+              icon: MdiIcons.onepassword,
+              icon2: Icons.edit,
+              press: () {
+                _onAlertPasswordChange(context);
+              },
+            ),
+            ProfileMenu(
+              text: "Change profile",
+              icon: MdiIcons.accountOutline,
+              icon2: Icons.edit,
+              press: () {
+                _onAlertProfileChange(context);
+              },
+            ),
+            ProfileMenu(
+              text: "Log Out",
+              icon: MdiIcons.logout,
+              press: () async {
+                print("Started");
+                await FlutterSession().set('token', '');
+                Navigator.pushReplacementNamed(context, Login.id);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -362,13 +384,54 @@ class ProfileMenu extends StatelessWidget {
   }
 }
 
-class ProfilePic extends StatelessWidget {
-  const ProfilePic({
-    Key key,
-  }) : super(key: key);
+class ProfilePic extends StatefulWidget {
+  ProfilePic({this.showSpinner}) ;
+ bool showSpinner;
+  @override
+  _ProfilePicState createState() => _ProfilePicState();
+}
 
+class _ProfilePicState extends State<ProfilePic> {
+  Dio dio = new Dio();
+  var image;
+  File imagePicked;
+  PickedFile pickedImage;
+  Future<void> getProfileData() async {
+    var token = await FlutterSession().get('token');
+    String webUrl = "https://clockk.in/api/my_profile";
+    var url = Uri.parse(webUrl);
+
+
+    try {
+      http.Response response = await http.get(url, headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token
+      });
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+
+        var value = data['data'];
+      setState(() {
+        image = value['image'];
+      });
+        await  FlutterSession().set('image',image);
+      } else {
+        print(response.statusCode);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
   @override
   Widget build(BuildContext context) {
+    var getData;
+    setState(() {
+      getData= FlutterSession().get('image');
+      print(getData);
+    });
+
     return SizedBox(
       height: 115,
       width: 115,
@@ -377,14 +440,15 @@ class ProfilePic extends StatelessWidget {
         overflow: Overflow.visible,
         children: [
           FutureBuilder(
-              future: FlutterSession().get('image'),
+              future:getData ,
               builder: (context, snapshot) {
+
                 // print(snapshot.data);
                 return CircleAvatar(
+                  backgroundColor: Colors.white,
                   radius: 28.0,
-                  backgroundImage: snapshot.hasData
-                      ? NetworkImage(snapshot.data)
-                      : AssetImage('images/prof.png'),
+                  backgroundImage: snapshot.hasData? NetworkImage(snapshot.data)
+                      : AssetImage('images/logo.png'),
                   // child: Image(
                   //   image: AssetImage('images/prof.png'),
                   // ),
@@ -402,8 +466,53 @@ class ProfilePic extends StatelessWidget {
                   side: BorderSide(color: Colors.white),
                 ),
                 color: Color(0xFFF5F6F9),
-                onPressed: () {
-                  
+                onPressed: ()async {
+
+             pickedImage = await ImagePicker().getImage(source: ImageSource.gallery);
+                    if (pickedImage != null){
+                    setState(() {
+
+                      imagePicked = File(pickedImage.path);
+                      widget.showSpinner = true;
+                    });
+                    }
+                    try{
+                      String fileName = imagePicked.path.split('/').last;
+                      FormData fromdata = new FormData.fromMap({
+                        'image': await MultipartFile.fromFile(imagePicked.path,filename: fileName,contentType:  MediaType('image','png')),
+                        'type':'image/png'
+
+                      });
+
+                      var token = await FlutterSession().get('token');
+                      String webUrl =
+                          "https://clockk.in/api/change_profile_picture?image=$fileName";
+                      var url = Uri.parse(webUrl);
+                      print(url);
+                      try {
+                        Response response = await dio.post(webUrl,data:fromdata ,options: Options( headers: {
+                          'Content-type': 'application/json',
+                          'Accept': 'application/json',
+                          'Authorization': token
+                        }));
+
+                        if (response.statusCode == 200) {
+                          print("Done");
+
+                        setState(() {
+
+                           getProfileData();
+                           widget.showSpinner = false;
+                        });
+                        } else {
+                          print(response.statusCode);
+                        }
+                      } catch (e) {
+                        print(e);
+                      }
+                    }catch(e){
+                      print(e);
+                    }
                 },
                 child: Icon(
                   MdiIcons.camera,

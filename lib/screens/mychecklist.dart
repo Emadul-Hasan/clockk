@@ -16,7 +16,10 @@ class MyCheckList extends StatefulWidget {
 }
 
 class _MyCheckListState extends State<MyCheckList> {
+
+
   List<MyTile> listOfTiles = <MyTile>[];
+
   Future<void> getTaskData() async {
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/my_check_list";
@@ -58,6 +61,10 @@ class _MyCheckListState extends State<MyCheckList> {
             });
         }
           }
+          setState(() {
+            listOfTiles.sort((a,b)=> a.children.length.compareTo(b.children.length));
+          });
+
 
 
         }catch(e){
@@ -80,11 +87,15 @@ class _MyCheckListState extends State<MyCheckList> {
 bool spinner = true;
   @override
   Widget build(BuildContext context) {
+
     setState(() {
       if (listOfTiles.isNotEmpty){
+        listOfTiles.sort((a,b)=> a.children.length.compareTo(b.children.length));
         spinner = false;
       }
     });
+
+
     return Scaffold(
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("My Check List")),
@@ -92,6 +103,15 @@ bool spinner = true;
         inAsyncCall: spinner,
         child: listOfTiles.isEmpty?Center(child: Text('No task found yet')): new ListView.builder(
           itemBuilder: (BuildContext context, int index) {
+            var childIndex = -1;
+            if (childIndex < listOfTiles[index].children.length){
+              childIndex++;
+            }
+            else{
+              childIndex = listOfTiles[index].children.length -1;
+            }
+            print(listOfTiles[index].children.length);
+
             return listOfTiles[index].children.isEmpty? Card(
               child: new StuffInTiles(
                 listOfTiles[index],
@@ -99,7 +119,7 @@ bool spinner = true;
               ),
             ): new StuffInTiles(
               listOfTiles[index],
-              listOfTiles[index].children[index].isDone,
+              listOfTiles[index].children[childIndex].isDone,
             );
           },
           itemCount: listOfTiles.length,
@@ -222,7 +242,6 @@ class _StuffInTilesState extends State<StuffInTiles> {
     );
   }
 }
-
 
 
 

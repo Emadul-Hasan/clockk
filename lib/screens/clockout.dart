@@ -14,8 +14,7 @@ class ClockOut extends StatefulWidget {
 }
 
 class _ClockOutState extends State<ClockOut> {
-  // List<String> DropDownItems = ["Azhar", "Beauty", "Mujib"];
-  // String valueChoosen;
+
   @override
   void initState() {
     Timer.periodic(Duration(seconds: 1), (Timer t) => timeUpdate());
@@ -101,13 +100,13 @@ class _ClockOutState extends State<ClockOut> {
                       color: Color(0xFF55A1CD)),
                 ),
               ),
-              Container(
-                padding: EdgeInsets.only(top: 10.0),
-                child: Text(
-                  "Clock in at $ClockInTime",
-                  style: TextStyle(color: Color(0xFF55A1CD)),
-                ),
-              ),
+              // Container(
+              //   padding: EdgeInsets.only(top: 10.0),
+              //   child: Text(
+              //     "Clock in at $ClockInTime",
+              //     style: TextStyle(color: Color(0xFF55A1CD)),
+              //   ),
+              // ),
               SizedBox(
                 height: 50.0,
               ),
