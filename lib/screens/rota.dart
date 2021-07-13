@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import 'notification.dart';
+
 class Rota extends StatefulWidget {
   static const id = "Rota";
   @override
@@ -95,7 +97,9 @@ class _RotaState extends State<Rota> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Rota")),
+      appBar: CustomAppBar(Text("Rota"),(){
+        Navigator.pushNamed(context, Notifications.id);
+      }),
       body: SfCalendar(
         view: CalendarView.week,
         firstDayOfWeek: 6,

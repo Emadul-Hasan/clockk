@@ -7,6 +7,8 @@ import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
+import 'notification.dart';
+
 class DashBoard extends StatefulWidget {
   static const id = "DashBoard";
   @override
@@ -74,7 +76,9 @@ class _DashBoardState extends State<DashBoard> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Dashboard")),
+      appBar: CustomAppBar(Text("Dashboard"),(){
+        Navigator.pushNamed(context, Notifications.id);
+      }),
       body: ModalProgressHUD(
         inAsyncCall: showSpinner,
         child: Column(

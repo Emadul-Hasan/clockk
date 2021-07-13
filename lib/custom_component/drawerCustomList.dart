@@ -36,10 +36,11 @@ class _DrawerCustomListState extends State<DrawerCustomList> {
                       builder: (context, snapshot) {
                         // print(snapshot.data);
                         return CircleAvatar(
+                          backgroundColor: Colors.white,
                           radius: 28.0,
                           backgroundImage: snapshot.hasData
                               ? NetworkImage(snapshot.data)
-                              : AssetImage('images/prof.png'),
+                              : AssetImage('images/logo.png'),
                           // child: Image(
                           //   image: AssetImage('images/prof.png'),
                           // ),

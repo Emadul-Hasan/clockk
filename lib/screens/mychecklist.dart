@@ -9,6 +9,8 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:http/http.dart' as http;
 
+import 'notification.dart';
+
 class MyCheckList extends StatefulWidget {
   static const id = "MyCheckList";
   @override
@@ -98,7 +100,9 @@ bool spinner = true;
 
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("My Check List")),
+      appBar: CustomAppBar(Text("My Check List"),(){
+        Navigator.pushNamed(context, Notifications.id);
+      }),
       body: ModalProgressHUD(
         inAsyncCall: spinner,
         child: listOfTiles.isEmpty?Center(child: Text('No task found yet')): new ListView.builder(

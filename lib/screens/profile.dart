@@ -16,6 +16,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dashboard.dart';
 import 'login.dart';
+import 'notification.dart';
 
 
 
@@ -31,7 +32,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Profile")),
+      appBar: CustomAppBar(Text("Profile"),(){
+        Navigator.pushNamed(context, Notifications.id);
+      }),
       body: Body(),
     );
   }

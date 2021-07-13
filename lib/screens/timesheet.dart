@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import 'notification.dart';
+
 class TimeSheet extends StatefulWidget {
   static const id = "TimeSheet";
   @override
@@ -70,7 +72,9 @@ class _TimeSheetState extends State<TimeSheet> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Time Sheet")),
+      appBar: CustomAppBar(Text("Time Sheet"),(){
+        Navigator.pushNamed(context, Notifications.id);
+      }),
       body: ModalProgressHUD(
         inAsyncCall: showSpinner,
         child: SingleChildScrollView(

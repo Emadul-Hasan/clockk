@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
+import 'notification.dart';
+
 class ClockOut extends StatefulWidget {
   static const id = "ClockOut";
   @override
@@ -47,14 +49,14 @@ class _ClockOutState extends State<ClockOut> {
     });
   }
 
-  _onSuccessToClockOut(context) {
+  _onSuccessToClockOut(context, String title, String text) {
     Alert(
         context: context,
-        title: "Success",
+        title:title,
         closeIcon: Icon(MdiIcons.close),
         content: Center(
           child: Text(
-            "Clocked Out",
+            text,
             textAlign: TextAlign.center,
             style: TextStyle(fontWeight: FontWeight.normal),
           ),
@@ -75,12 +77,14 @@ class _ClockOutState extends State<ClockOut> {
 
   @override
   Widget build(BuildContext context) {
-    int monthNumber = timeNow.month;
-    String month = monthString[monthNumber];
-    String ClockInTime = "9.00Am";
+    // int monthNumber = timeNow.month;
+    // String month = monthString[monthNumber];
+    // String ClockInTime = "9.00Am";
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Clock out")),
+      appBar: CustomAppBar(Text("Clock out"),(){
+        Navigator.pushNamed(context, Notifications.id);
+      }),
       body: Center(
         child: Container(
           child: Column(
@@ -168,8 +172,9 @@ class _ClockOutState extends State<ClockOut> {
                       });
 
                       if (response.statusCode == 200) {
-                        _onSuccessToClockOut(context);
+                        _onSuccessToClockOut(context, "Success","Clocked out");
                       } else {
+                        _onSuccessToClockOut(context, "Failed","Check your connectivity and try again");
                         print(response.statusCode);
                       }
                     } catch (e) {
