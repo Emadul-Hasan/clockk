@@ -15,6 +15,7 @@ class Notifications extends StatefulWidget {
 
 class _NotificationsState extends State<Notifications> {
   Future<void> getNotificationData() async {
+    notifications = [];
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/notification";
     var url = Uri.parse(webUrl);
@@ -62,31 +63,51 @@ class _NotificationsState extends State<Notifications> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+      bottomNavigationBar: Container(
+
+        margin: EdgeInsets.only(left: 8.0,right: 8.0),
+        child: ElevatedButton(child: Text('clear all'),onPressed: (){
+          setState(() {
+            notifications = [];
+          });
+        },),
+      ),
+
+      
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("Notifications"),(){
         Navigator.pushReplacementNamed(context, Notifications.id);
       }),
       body: ModalProgressHUD(
         inAsyncCall: showSpinner,
-        child: new ListView.builder(
-          itemBuilder: (BuildContext context, int index) {
+        child: RefreshIndicator(
+          onRefresh:getNotificationData,
+          child: new ListView.builder(
+            itemBuilder: (BuildContext context, int index) {
 
 
-            return  Container(
-              margin: EdgeInsets.only(left: 5.0,right: 5.0),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.only(left:4.0,right: 4.0, top: 10.0,bottom: 10.0),
-                  child: ListTile(
-                    minLeadingWidth: 2.0,
-                    horizontalTitleGap: 5.0,
-                    leading: Icon(MdiIcons.alarm,color: Colors.orange,size: 25.0,),
-                    title:Text(notifications[index],style: TextStyle(fontSize: 14.0),) ,
-                  ),
-                )),
-            );
-          },
-          itemCount: notifications.length,
+              return  Container(
+                margin: EdgeInsets.only(left: 5.0,right: 5.0),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left:4.0,right: 4.0, top: 10.0,bottom: 10.0),
+                    child: ListTile(
+                      minLeadingWidth: 2.0,
+                      horizontalTitleGap: 5.0,
+                      leading: Icon(MdiIcons.alarm,color: Colors.orange,size: 25.0,),
+                      title:Text(notifications[index],style: TextStyle(fontSize: 14.0),) ,
+                      trailing: IconButton(onPressed: (){
+
+                        setState(() {
+                          notifications.removeAt(index);
+                        });
+                      }, icon: Icon(MdiIcons.close)),
+                    ),
+                  )),
+              );
+            },
+            itemCount: notifications.length,
+          ),
         ),
       ),
     );

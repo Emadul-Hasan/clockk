@@ -1,6 +1,7 @@
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -16,6 +17,10 @@ class TimeSheet extends StatefulWidget {
 
 class _TimeSheetState extends State<TimeSheet> {
   Future<void> getTimeSheetData() async {
+    UserEntryRecord.clear();
+    setState(() {
+      showSpinner = true;
+    });
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/timesheet";
     var url = Uri.parse(webUrl);
@@ -67,10 +72,41 @@ class _TimeSheetState extends State<TimeSheet> {
     super.initState();
   }
 
+  List monthString = [
+    // 'Month',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  List yearString=[
+    '2021',
+    '2022',
+    '2023',
+    '2024',
+    '2025',
+    '2026',
+    '2027',
+    '2028',
+    '2029',
+    '2030',
+
+  ];
+
   bool showSpinner = true;
+  String valueChoosen;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(onPressed:getTimeSheetData,child: Icon(MdiIcons.refresh),),
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("Time Sheet"),(){
         Navigator.pushNamed(context, Notifications.id);
@@ -78,33 +114,73 @@ class _TimeSheetState extends State<TimeSheet> {
       body: ModalProgressHUD(
         inAsyncCall: showSpinner,
         child: SingleChildScrollView(
-          child: Container(
-            child: DataTable(
+          child: Column(
+            children: [
 
-              columnSpacing: 20.0,
-              horizontalMargin: 20.0,
-              columns: <DataColumn>[
-                DataColumn(label: Text("Date")),
-                DataColumn(label: Text("Clock in")),
-                DataColumn(label: Text("Clock Out")),
-                DataColumn(label: Text("Total Hour")),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(width: 20.0,),
+
+                Expanded(child: Container(height: 40.0,margin: EdgeInsets.only(top: 5.0,right: 3.0),padding: EdgeInsets.only(left: 5.0,right: 5.0, top: 0.0, bottom: 0.0),decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey,width: 1.0,style: BorderStyle.solid),borderRadius: BorderRadius.circular(5.0),
+                ),child: DropdownButton(isExpanded: true,underline: SizedBox(),dropdownColor: Colors.white,value: valueChoosen,onChanged: (value){
+                  setState(() {
+                    valueChoosen = value;
+                  });
+                },hint:Text('Select Month') ,items: monthString.map((valueItem){
+                  return DropdownMenuItem(value: valueItem,child: Text(valueItem));
+                } ).toList(),)),),
+                Expanded(child: Container(height: 40.0,margin: EdgeInsets.only(top: 5.0),padding: EdgeInsets.only(left: 5.0,right: 5.0, top: 0.0, bottom: 0.0),decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey,width: 1.0,style: BorderStyle.solid),borderRadius: BorderRadius.circular(5.0),
+                ),child: DropdownButton(isExpanded: true,underline: SizedBox(),dropdownColor: Colors.white,value: valueChoosen,onChanged: (value){
+                  setState(() {
+                    valueChoosen = value;
+                  });
+                },hint:Text('Select year') ,items: yearString.map((valueItem){
+                  return DropdownMenuItem(value: valueItem,child: Text(valueItem));
+                } ).toList(),)),),
+
+                  SizedBox(width: 20.0,),
+
+
               ],
-              rows: UserEntryRecord.map(
-                (User) => DataRow(
-                  cells: [
-                    DataCell(
-                      Center(child: Text(User.UserName)),
-                    ),
-                    DataCell(Center(child: Text(User.EnterTime))),
-                    DataCell(Center(child: Text(User.ExitTime))),
-                    DataCell(Center(
-                        child: Text(
-                      User.TotalHour,
-                    ))),
-                  ],
-                ),
-              ).toList(),
-            ),
+              ),
+              Row(children: [
+                SizedBox(width: 20.0,),
+                Expanded(child: Container(margin: EdgeInsets.only(left: 1.0,right: 1.0),child: ElevatedButton(onPressed: (){}, child: Text('Get Time Sheet')))),
+                Expanded(child: Container(margin: EdgeInsets.only(left: 1.0,right: 1.0),child: ElevatedButton(onPressed: (){}, child: Text('Reset')))),
+                SizedBox(width: 20.0,),
+
+              ],
+              ),
+              DataTable(
+
+                columnSpacing: 20.0,
+                horizontalMargin: 20.0,
+                columns: <DataColumn>[
+                  DataColumn(label: Text("Date")),
+                  DataColumn(label: Text("Clock in")),
+                  DataColumn(label: Text("Clock Out")),
+                  DataColumn(label: Text("Total Hour")),
+                ],
+                rows: UserEntryRecord.map(
+                  (User) => DataRow(
+                    cells: [
+                      DataCell(
+                        Center(child: Text(User.UserName)),
+                      ),
+                      DataCell(Center(child: Text(User.EnterTime))),
+                      DataCell(Center(child: Text(User.ExitTime))),
+                      DataCell(Center(
+                          child: Text(
+                        User.TotalHour,
+                      ))),
+                    ],
+                  ),
+                ).toList(),
+              ),
+            ],
           ),
         ),
       ),

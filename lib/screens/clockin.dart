@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,11 +18,19 @@ class ClockIn extends StatefulWidget {
   _ClockInState createState() => _ClockInState();
 }
 
-class _ClockInState extends State<ClockIn> {
+
+class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
+
+  var controller;
   @override
   void initState() {
     getcurrentlocation();
     Timer.periodic(Duration(seconds: 1), (Timer t) => timeUpdate());
+    controller =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
+    controller.addListener(() {
+      setState(() {});
+    });
     super.initState();
   }
 
@@ -145,7 +154,7 @@ bool showSpinner = false;
                           style: TextStyle(
                             fontSize: 24.0,
                             fontWeight: FontWeight.bold,
-                            // color: Color(0xFF55A1CD),
+                            color: Color(0xFF55A1CD),
                           ),
                         );
                       }),
@@ -170,49 +179,83 @@ bool showSpinner = false;
                   height: 30.0,
                 ),
                 Container(
-                  padding: EdgeInsets.only(top: 10.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      primary: Color(0xFF55A1CD),
-                      padding: EdgeInsets.fromLTRB(100.0, 10.0, 100.0, 10.0),
-                    ),
-                    child: Text("Clock in"),
-                    onPressed: () async {
-                      setState(() {
-                        showSpinner = true;
-                      });
-                      var token = await FlutterSession().get('token');
-                      print(token);
-
-                      String webUrl =
-                          "https://clockk.in/api/clock_in?lat=$latitube&long=$longitude";
-                      var url = Uri.parse(webUrl);
-                      print(webUrl);
-
-                      try {
-                        http.Response response = await http.post(url, headers: {
-                          'Content-type': 'application/json',
-                          'Accept': 'application/json',
-                          'Authorization': token
+                  // padding: EdgeInsets.only(top: 10.0),
+                  child: GestureDetector(
+                    onTapDown: (_) => controller.forward(),
+                    onTapUp: (_) async{
+                      if(controller.status == AnimationStatus.completed){
+                        print("Completed");
+                        setState(() {
+                          showSpinner = true;
                         });
+                        var token = await FlutterSession().get('token');
+                        print(token);
 
-                        if (response.statusCode == 200) {
-                          setState(() {
-                            showSpinner = false;
-                          });
+                        String webUrl =
+                            "https://clockk.in/api/clock_in?lat=$latitube&long=$longitude";
+                        var url = Uri.parse(webUrl);
+                        print(webUrl);
 
-                          _onSuccessToClockin(context,"Success","Clocked in");
-                        } else {
-                          setState(() {
-                            showSpinner = false;
+                        try {
+                          http.Response response = await http.post(url, headers: {
+                            'Content-type': 'application/json',
+                            'Accept': 'application/json',
+                            'Authorization': token
                           });
-                          _onSuccessToClockin(context,"Failed","Check your location and internet service");
-                          print(response.statusCode);
+                          var body = jsonDecode(response.body);
+
+
+                          if (response.statusCode == 200) {
+                            setState(() {
+                              showSpinner = false;
+                            });
+                            String message = body['message'];
+
+                            _onSuccessToClockin(context,"Status",message.toString());
+                          }else if(response.statusCode == 404){
+
+                            setState(() {
+                              showSpinner = false;
+                            });
+                            String message = body['data']['error'];
+
+                            _onSuccessToClockin(context,"Status",message.toString());
+                          }
+                          else {
+                            setState(() {
+                              showSpinner = false;
+                            });
+                            _onSuccessToClockin(context,"Status","Check your location and internet service");
+                            print(response.body);
+
+                          }
+                        } catch (e) {
+                          print(e);
                         }
-                      } catch (e) {
-                        print(e);
+                        controller.value = 0.0;
+                      }
+                      if (controller.status == AnimationStatus.forward) {
+                        controller.reverse();
                       }
                     },
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          height: 80,
+                          width: 80,
+                          child: CircularProgressIndicator(
+                            semanticsLabel: 'Tap here',
+
+                            strokeWidth: 6.0,
+                            value: controller.value,
+                            backgroundColor: Color(0xFF55A1CD),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey),
+                          ),
+                        ),
+                        Icon(MdiIcons.clockCheckOutline,color: Color(0xFF55A1CD),size: 35.0,)
+                      ],
+                    ),
                   ),
                 )
               ],
@@ -223,3 +266,5 @@ bool showSpinner = false;
     );
   }
 }
+
+

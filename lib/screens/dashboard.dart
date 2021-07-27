@@ -5,6 +5,7 @@ import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
 import 'notification.dart';
@@ -16,6 +17,7 @@ class DashBoard extends StatefulWidget {
 }
 
 class _DashBoardState extends State<DashBoard> {
+  var getData;
   bool showSpinner = true;
   bool myChecklistCompleted = true;
   String myCheckListNumber = '-';
@@ -30,6 +32,9 @@ class _DashBoardState extends State<DashBoard> {
   }
 
   Future<void> getDashBoardData() async {
+    setState(() {
+      showSpinner = true;
+    });
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/dashboard";
     var url = Uri.parse(webUrl);
@@ -45,7 +50,7 @@ class _DashBoardState extends State<DashBoard> {
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
 
-        var getData = data['data'];
+        getData = data['data'];
 
         setState(() {
           myCheckListNumber = getData[0]['my_checklist'].toString();
@@ -75,177 +80,176 @@ class _DashBoardState extends State<DashBoard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(onPressed:getDashBoardData,child: Icon(MdiIcons.refresh),),
+
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("Dashboard"),(){
         Navigator.pushNamed(context, Notifications.id);
       }),
-      body: ModalProgressHUD(
-        inAsyncCall: showSpinner,
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.only(top: 15.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Icon(
-                      myCheckListNumber != '0'
-                          ? Icons.radio_button_unchecked
-                          : Icons.check_circle,
-                      color: Colors.green,
+      body: getData == null? ModalProgressHUD(inAsyncCall: showSpinner, child: Center(child: Text('Getting updated data...'),)) :Column(
+        children: [
+          Container(
+            padding: EdgeInsets.only(top: 15.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Icon(
+                    myCheckListNumber != '0'
+                        ? Icons.radio_button_unchecked
+                        : Icons.check_circle,
+                    color: Colors.green,
+                  ),
+                ),
+                Expanded(
+                    flex: 5,
+                    child: Text(
+                      "My remaining task",
+                      style: TextStyle(fontSize: 17.0),
+                    )),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    padding: EdgeInsets.only(right: 10.0),
+                    child: Text(
+                      myCheckListNumber,
+                      style: TextStyle(fontSize: 17.0),
                     ),
                   ),
-                  Expanded(
-                      flex: 5,
-                      child: Text(
-                        "My remaining task",
-                        style: TextStyle(fontSize: 17.0),
-                      )),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        myCheckListNumber,
-                        style: TextStyle(fontSize: 17.0),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
-            Container(
-              padding: EdgeInsets.only(top: 15.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Icon(
-                      teamCheckListNumber != '0'
-                          ? Icons.radio_button_unchecked
-                          : Icons.check_circle,
-                      color: Colors.green,
+          ),
+          Container(
+            padding: EdgeInsets.only(top: 15.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Icon(
+                    teamCheckListNumber != '0'
+                        ? Icons.radio_button_unchecked
+                        : Icons.check_circle,
+                    color: Colors.green,
+                  ),
+                ),
+                Expanded(
+                    flex: 5,
+                    child: Text(
+                      "Team remaining task",
+                      style: TextStyle(fontSize: 17.0),
+                    )),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    padding: EdgeInsets.only(right: 10.0),
+                    child: Text(
+                      teamCheckListNumber,
+                      style: TextStyle(fontSize: 17.0),
                     ),
                   ),
-                  Expanded(
-                      flex: 5,
-                      child: Text(
-                        "Team remaining task",
-                        style: TextStyle(fontSize: 17.0),
-                      )),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        teamCheckListNumber,
-                        style: TextStyle(fontSize: 17.0),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
-            Container(
-              padding: EdgeInsets.only(top: 20.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Icon(
-                      taskCompleteNumber == '0'
-                          ? Icons.radio_button_unchecked
-                          : Icons.check_circle,
-                      color: Colors.green,
+          ),
+          Container(
+            padding: EdgeInsets.only(top: 20.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Icon(
+                    taskCompleteNumber == '0'
+                        ? Icons.radio_button_unchecked
+                        : Icons.check_circle,
+                    color: Colors.green,
+                  ),
+                ),
+                Expanded(
+                    flex: 5,
+                    child: Text(
+                      "Task completed today",
+                      style: TextStyle(fontSize: 17.0),
+                    )),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    padding: EdgeInsets.only(right: 10.0),
+                    child: Text(
+                      taskCompleteNumber,
+                      style: TextStyle(fontSize: 17.0),
                     ),
                   ),
-                  Expanded(
-                      flex: 5,
-                      child: Text(
-                        "Task completed today",
-                        style: TextStyle(fontSize: 17.0),
-                      )),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        taskCompleteNumber,
-                        style: TextStyle(fontSize: 17.0),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
-            Container(
-              padding: EdgeInsets.only(top: 20.0),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 5.0,
+          ),
+          Container(
+            padding: EdgeInsets.only(top: 20.0),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 5.0,
+                ),
+                Expanded(
+                  child: Icon(
+                    myChecklistCompleted == true
+                        ? Icons.radio_button_unchecked
+                        : Icons.check_circle,
+                    color: Colors.green,
                   ),
-                  Expanded(
-                    child: Icon(
-                      myChecklistCompleted == true
-                          ? Icons.radio_button_unchecked
-                          : Icons.check_circle,
-                      color: Colors.green,
+                ),
+                Expanded(
+                    flex: 5,
+                    child: Text(
+                      "Todays working hour",
+                      style: TextStyle(fontSize: 17.0),
+                    )),
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    padding: EdgeInsets.only(right: 10.0),
+                    child: Text(
+                      workedHour,
+                      style: TextStyle(fontSize: 17.0),
                     ),
                   ),
-                  Expanded(
-                      flex: 5,
-                      child: Text(
-                        "Todays working hour",
-                        style: TextStyle(fontSize: 17.0),
-                      )),
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      padding: EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        workedHour,
-                        style: TextStyle(fontSize: 17.0),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
-            Container(
-              padding: EdgeInsets.only(top: 20.0),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 5.0,
+          ),
+          Container(
+            padding: EdgeInsets.only(top: 20.0),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 5.0,
+                ),
+                Expanded(
+                  child: Icon(
+                    myChecklistCompleted == true
+                        ? Icons.radio_button_unchecked
+                        : Icons.check_circle,
+                    color: Colors.green,
                   ),
-                  Expanded(
-                    child: Icon(
-                      myChecklistCompleted == true
-                          ? Icons.radio_button_unchecked
-                          : Icons.check_circle,
-                      color: Colors.green,
+                ),
+                Expanded(
+                    flex: 5,
+                    child: Text(
+                      "Weeks working hour",
+                      style: TextStyle(fontSize: 17.0),
+                    )),
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    padding: EdgeInsets.only(right: 10.0),
+                    child: Text(
+                      weeklyWorkedHour,
+                      style: TextStyle(fontSize: 17.0),
                     ),
                   ),
-                  Expanded(
-                      flex: 5,
-                      child: Text(
-                        "Weeks working hour",
-                        style: TextStyle(fontSize: 17.0),
-                      )),
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      padding: EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        weeklyWorkedHour,
-                        style: TextStyle(fontSize: 17.0),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

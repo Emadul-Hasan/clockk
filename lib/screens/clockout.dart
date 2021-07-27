@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +17,18 @@ class ClockOut extends StatefulWidget {
   _ClockOutState createState() => _ClockOutState();
 }
 
-class _ClockOutState extends State<ClockOut> {
+class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin {
+
+  var controller;
 
   @override
   void initState() {
     Timer.periodic(Duration(seconds: 1), (Timer t) => timeUpdate());
+    controller =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
+    controller.addListener(() {
+      setState(() {});
+    });
     super.initState();
   }
 
@@ -74,6 +83,7 @@ class _ClockOutState extends State<ClockOut> {
           )
         ]).show();
   }
+  bool showSpinner = false;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +135,7 @@ class _ClockOutState extends State<ClockOut> {
                         style: TextStyle(
                           fontSize: 24.0,
                           fontWeight: FontWeight.bold,
-                          // color: Color(0xFF55A1CD),
+                          color: Color(0xFF55A1CD),
                         ),
                       );
                     }),
@@ -151,36 +161,80 @@ class _ClockOutState extends State<ClockOut> {
               ),
               Container(
                 padding: EdgeInsets.only(top: 10.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Color(0xFF55A1CD),
-                    padding: EdgeInsets.fromLTRB(100.0, 10.0, 100.0, 10.0),
-                  ),
-                  child: Text("Clock out"),
-                  onPressed: () async {
-                    var token = await FlutterSession().get('token');
+                child: GestureDetector(
+                  onTapDown: (_) => controller.forward(),
+                  onTapUp: (_) async{
+                    if(controller.status == AnimationStatus.completed){
 
-                    String webUrl = "https://clockk.in/api/clock_out";
-                    var url = Uri.parse(webUrl);
-                    print(webUrl);
-
-                    try {
-                      http.Response response = await http.post(url, headers: {
-                        'Content-type': 'application/json',
-                        'Accept': 'application/json',
-                        'Authorization': token
+                      setState(() {
+                        showSpinner = true;
                       });
+                      var token = await FlutterSession().get('token');
 
-                      if (response.statusCode == 200) {
-                        _onSuccessToClockOut(context, "Success","Clocked out");
-                      } else {
-                        _onSuccessToClockOut(context, "Failed","Check your connectivity and try again");
-                        print(response.statusCode);
+                      String webUrl = "https://clockk.in/api/clock_out";
+                      var url = Uri.parse(webUrl);
+                      print(webUrl);
+
+                      try {
+                        http.Response response = await http.post(url, headers: {
+                          'Content-type': 'application/json',
+                          'Accept': 'application/json',
+                          'Authorization': token
+                        });
+                        var body = jsonDecode(response.body);
+
+
+                        if (response.statusCode == 200) {
+                          setState(() {
+                            showSpinner = false;
+                          });
+                          String message = body['message'];
+
+                          _onSuccessToClockOut(context,"Status",message.toString());
+                        }else if(response.statusCode == 404){
+
+                          setState(() {
+                            showSpinner = false;
+                          });
+                          String message = body['data']['error'];
+
+                          _onSuccessToClockOut(context,"Status",message.toString());
+                        }
+                        else {
+                          setState(() {
+                            showSpinner = false;
+                          });
+                          _onSuccessToClockOut(context,"Status","Check your location and internet service");
+                          print(response.body);
+
+                        }
+                      } catch (e) {
+                        print(e);
                       }
-                    } catch (e) {
-                      print(e);
+                      controller.value = 0.0;
+                    }
+                    if (controller.status == AnimationStatus.forward) {
+                      controller.reverse();
                     }
                   },
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        height: 80,
+                        width: 80,
+                        child: CircularProgressIndicator(
+                          semanticsLabel: 'Tap here',
+
+                          strokeWidth: 6.0,
+                          value: controller.value,
+                          backgroundColor: Color(0xFF55A1CD),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey),
+                        ),
+                      ),
+                      Icon(MdiIcons.clockFast,color: Color(0xFF55A1CD),size: 35.0,)
+                    ],
+                  ),
                 ),
               )
             ],
@@ -190,3 +244,5 @@ class _ClockOutState extends State<ClockOut> {
     );
   }
 }
+
+

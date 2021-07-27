@@ -23,6 +23,7 @@ class _TeamCheckListState extends State<TeamCheckList> {
   List<MyTile> listOfTiles = <MyTile>[];
 
   Future<void> getTaskData() async {
+    listOfTiles.clear();
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/team_check_list";
     var url = Uri.parse(webUrl);
@@ -100,33 +101,36 @@ class _TeamCheckListState extends State<TeamCheckList> {
 
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Team Check List"),(){
+      appBar: CustomAppBar(Text("Team Checklist"),(){
         Navigator.pushNamed(context, Notifications.id);
       }),
       body: ModalProgressHUD(
         inAsyncCall: spinner,
-        child: listOfTiles.isEmpty?Center(child: Text('No task found yet')): new ListView.builder(
-          itemBuilder: (BuildContext context, int index) {
-            var childIndex = -1;
-            if (childIndex < listOfTiles[index].children.length){
-              childIndex++;
-            }
-            else{
-              childIndex = listOfTiles[index].children.length -1;
-            }
-            print(listOfTiles[index].children.length);
+        child: listOfTiles.isEmpty?Center(child: Text('Getting task.....')): RefreshIndicator(
+          onRefresh: getTaskData,
+          child: new ListView.builder(
+            itemBuilder: (BuildContext context, int index) {
+              var childIndex = -1;
+              if (childIndex < listOfTiles[index].children.length){
+                childIndex++;
+              }
+              else{
+                childIndex = listOfTiles[index].children.length -1;
+              }
+              print(listOfTiles[index].children.length);
 
-            return listOfTiles[index].children.isEmpty? Card(
-              child: new StuffInTiles(
-                  listOfTiles[index],
-                  listOfTiles[index].isDone
-              ),
-            ): new StuffInTiles(
-              listOfTiles[index],
-              listOfTiles[index].children[childIndex].isDone,
-            );
-          },
-          itemCount: listOfTiles.length,
+              return listOfTiles[index].children.isEmpty? Card(
+                child: new StuffInTiles(
+                    listOfTiles[index],
+                    listOfTiles[index].isDone
+                ),
+              ): new StuffInTiles(
+                listOfTiles[index],
+                listOfTiles[index].children[childIndex].isDone,
+              );
+            },
+            itemCount: listOfTiles.length,
+          ),
         ),
       ),
     );
@@ -190,10 +194,14 @@ class _StuffInTilesState extends State<StuffInTiles> {
                 });
 
                 if (response.statusCode == 200) {
-                  print("Send");
+
+                  print(response.body);
+                  var body = jsonDecode(response.body);
+                  String message = body['message'];
+                  _onAlertMessage(context, message);
 
                 } else {
-                  print(response.statusCode);
+                  _onAlertMessage(context, 'Sending Failed');
                 }
               } catch (e) {
                 print(e);
@@ -208,34 +216,63 @@ class _StuffInTilesState extends State<StuffInTiles> {
         ]).show();
   }
 
+  _onAlertMessage(context, String message) {
+
+    Alert(
+        context: context,
+        title: "Status",
+        content: Column(
+          children: <Widget>[
+            Text(message)
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            width: 60.0,
+            color: Colors.lightBlueAccent,
+            onPressed: () async{
+              Navigator.pop(context);
+            },
+            child: Text(
+              "OK",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          )
+        ]).show();
+  }
+
   Widget _buildTiles(MyTile t) {
     if (t.children.isEmpty)
-      return new ListTile(
-          dense: true,
-          enabled: true,
-          isThreeLine: false,
-          // onLongPress: () =>  _onAlertWithCustomContentPressed(context, t.id),
-          onTap: () {
-            setState(() {
-              t.isDone = !t.isDone;
-              _onAlertWithCustomContentPressed(context, t.id);
-            });
-          },
-          leading: Checkbox(
-            value: t.isDone,
-            onChanged: (value) {
+      return Visibility(
+        visible: t.isDone? false : true,
+        child: new ListTile(
+            dense: true,
+            enabled: true,
+            isThreeLine: false,
+            // onLongPress: () =>  _onAlertWithCustomContentPressed(context, t.id),
+            onTap: () {
               setState(() {
                 t.isDone = !t.isDone;
                 _onAlertWithCustomContentPressed(context, t.id);
               });
             },
-          ),
-          selected: true,
-          title: new Text(
-            t.title,
-            style: TextStyle(
-                decoration: t.isDone ? TextDecoration.lineThrough : null),
-          ));
+            leading: Checkbox(
+              // activeColor: Colors.white,
+              value: t.isDone,
+              onChanged: (value) {
+                setState(() {
+                  t.isDone = !t.isDone;
+                  _onAlertWithCustomContentPressed(context, t.id);
+                });
+              },
+            ),
+            selected: true,
+            title: new Text(
+              t.title,
+              style: TextStyle(
+                  decoration: t.isDone ? TextDecoration.lineThrough : null,),
+            )),
+      );
 
     return Card(
       child: new ExpansionTile(

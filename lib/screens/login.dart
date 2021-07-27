@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/screens/dashboard.dart';
 import 'package:clockk/screens/passrecoverypage.dart';
@@ -135,13 +134,6 @@ class _LoginState extends State<Login> {
                     var data = jsonDecode(response.body);
                     print(data);
                     var token = data['data'];
-
-                    print(token['token']);
-                    print(token['email']);
-                    print(token['name']);
-                    print(token['picture']);
-                    print(token['designation']);
-                    print(token['company_name']);
                     await FlutterSession().set("token", token['token']);
                     await FlutterSession().set('name', token['name']);
                     await FlutterSession().set('email', token['email']);

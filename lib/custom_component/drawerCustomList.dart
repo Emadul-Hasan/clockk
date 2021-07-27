@@ -98,14 +98,14 @@ class _DrawerCustomListState extends State<DrawerCustomList> {
                   Navigator.pushNamed(context, ClockOut.id);
                 }),
             CustomListTile(
-                menuTitle: 'My Task List',
+                menuTitle: 'My Checklist',
                 icon: MdiIcons.formatListChecks,
                 action: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, MyCheckList.id);
                 }),
             CustomListTile(
-                menuTitle: 'Team Task List',
+                menuTitle: 'Team Checklist',
                 icon: MdiIcons.formatListCheckbox,
                 action: () {
                   Navigator.of(context).pop();
