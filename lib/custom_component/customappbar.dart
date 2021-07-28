@@ -1,9 +1,8 @@
-import 'package:clockk/screens/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class CustomAppBar extends AppBar {
-  CustomAppBar(Widget title, Function onpressed)
+  CustomAppBar(Widget title, Function _onPressed)
       : super(
           title: title,
           actions: [
@@ -11,7 +10,7 @@ class CustomAppBar extends AppBar {
                 padding: EdgeInsets.only(right: 10.0),
                 child: IconButton(
                   icon: Icon(MdiIcons.bellOutline),
-                  onPressed:onpressed,
+                  onPressed: _onPressed,
                 )),
           ],
           flexibleSpace: Container(
@@ -21,6 +20,4 @@ class CustomAppBar extends AppBar {
             )),
           ),
         );
-
 }
-

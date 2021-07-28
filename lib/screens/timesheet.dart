@@ -18,7 +18,7 @@ class TimeSheet extends StatefulWidget {
 
 class _TimeSheetState extends State<TimeSheet> {
   Future<void> getTimeSheetData() async {
-    UserEntryRecord.clear();
+    userEntryRecord.clear();
     setState(() {
       showSpinner = true;
     });
@@ -41,7 +41,7 @@ class _TimeSheetState extends State<TimeSheet> {
         for (var item in value) {
           print(item);
           setState(() {
-            UserEntryRecord.add(UserEntryModel(
+            userEntryRecord.add(UserEntryModel(
                 item['date'].toString() == "null"
                     ? '--'
                     : item['date'].toString(),
@@ -65,7 +65,7 @@ class _TimeSheetState extends State<TimeSheet> {
     }
   }
 
-  List<UserEntryModel> UserEntryRecord = [];
+  List<UserEntryModel> userEntryRecord = [];
 
   @override
   void initState() {
@@ -235,21 +235,23 @@ class _TimeSheetState extends State<TimeSheet> {
                   DataColumn(label: Text("Clock Out")),
                   DataColumn(label: Text("Total Hour")),
                 ],
-                rows: UserEntryRecord.map(
-                  (User) => DataRow(
-                    cells: [
-                      DataCell(
-                        Center(child: Text(User.UserName)),
+                rows: userEntryRecord
+                    .map(
+                      (user) => DataRow(
+                        cells: [
+                          DataCell(
+                            Center(child: Text(user.userName)),
+                          ),
+                          DataCell(Center(child: Text(user.enterTime))),
+                          DataCell(Center(child: Text(user.exitTime))),
+                          DataCell(Center(
+                              child: Text(
+                            user.totalHour,
+                          ))),
+                        ],
                       ),
-                      DataCell(Center(child: Text(User.EnterTime))),
-                      DataCell(Center(child: Text(User.ExitTime))),
-                      DataCell(Center(
-                          child: Text(
-                        User.TotalHour,
-                      ))),
-                    ],
-                  ),
-                ).toList(),
+                    )
+                    .toList(),
               ),
             ],
           ),
@@ -260,9 +262,9 @@ class _TimeSheetState extends State<TimeSheet> {
 }
 
 class UserEntryModel {
-  final String UserName;
-  final String EnterTime;
-  final String ExitTime;
-  final String TotalHour;
-  UserEntryModel(this.UserName, this.EnterTime, this.ExitTime, this.TotalHour);
+  final String userName;
+  final String enterTime;
+  final String exitTime;
+  final String totalHour;
+  UserEntryModel(this.userName, this.enterTime, this.exitTime, this.totalHour);
 }
