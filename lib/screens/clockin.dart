@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:clockk/models/AlertModel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
@@ -9,7 +11,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
+
 import 'notification.dart';
 
 class ClockIn extends StatefulWidget {
@@ -18,9 +20,7 @@ class ClockIn extends StatefulWidget {
   _ClockInState createState() => _ClockInState();
 }
 
-
 class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
-
   var controller;
   @override
   void initState() {
@@ -46,6 +46,8 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
       print(latitube);
       print(longitude);
     } catch (e) {
+      alert.messageAlert(context, 'title', MdiIcons.alert,
+          'Turn on your location and refresh this page', Colors.orange);
       print(e);
     }
   }
@@ -68,6 +70,7 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
   DateTime timeNow = DateTime.now();
 
   String formattedTime;
+  AlertMessage alert = AlertMessage();
 
   void timeUpdate() {
     setState(() {
@@ -76,40 +79,15 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
     });
   }
 
-  _onSuccessToClockin(context, String title, String text) {
-    Alert(
-        context: context,
-        title: title,
-        closeIcon: Icon(MdiIcons.close),
-        content: Center(
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.normal),
-          ),
-        ),
-        buttons: [
-          DialogButton(
-            child: Text(
-              "Done",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          )
-        ]).show();
-  }
-
+  bool showSpinner = false;
   @override
   Widget build(BuildContext context) {
     int monthNumber = timeNow.month;
     String month = monthString[monthNumber];
-bool showSpinner = false;
+
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Clock in"),(){
+      appBar: CustomAppBar(Text("Clock in"), () {
         Navigator.pushNamed(context, Notifications.id);
       }),
       body: ModalProgressHUD(
@@ -150,7 +128,9 @@ bool showSpinner = false;
                       builder: (context, snapshot) {
                         // print(snapshot.data);
                         return Text(
-                          snapshot.hasData ? snapshot.data : "User name missing",
+                          snapshot.hasData
+                              ? snapshot.data
+                              : "User name missing",
                           style: TextStyle(
                             fontSize: 24.0,
                             fontWeight: FontWeight.bold,
@@ -182,52 +162,60 @@ bool showSpinner = false;
                   // padding: EdgeInsets.only(top: 10.0),
                   child: GestureDetector(
                     onTapDown: (_) => controller.forward(),
-                    onTapUp: (_) async{
-                      if(controller.status == AnimationStatus.completed){
+                    onTapUp: (_) async {
+                      if (controller.status == AnimationStatus.completed) {
                         print("Completed");
                         setState(() {
                           showSpinner = true;
                         });
                         var token = await FlutterSession().get('token');
-                        print(token);
-
                         String webUrl =
                             "https://clockk.in/api/clock_in?lat=$latitube&long=$longitude";
                         var url = Uri.parse(webUrl);
-                        print(webUrl);
 
                         try {
-                          http.Response response = await http.post(url, headers: {
+                          http.Response response =
+                              await http.post(url, headers: {
                             'Content-type': 'application/json',
                             'Accept': 'application/json',
                             'Authorization': token
                           });
                           var body = jsonDecode(response.body);
 
-
                           if (response.statusCode == 200) {
                             setState(() {
                               showSpinner = false;
                             });
                             String message = body['message'];
-
-                            _onSuccessToClockin(context,"Status",message.toString());
-                          }else if(response.statusCode == 404){
-
+                            alert.messageAlert(
+                                context,
+                                "Status",
+                                MdiIcons.check,
+                                message.toString(),
+                                Colors.green);
+                          } else if (response.statusCode == 404) {
                             setState(() {
                               showSpinner = false;
                             });
                             String message = body['data']['error'];
-
-                            _onSuccessToClockin(context,"Status",message.toString());
-                          }
-                          else {
+                            alert.messageAlert(
+                                context,
+                                "Status",
+                                MdiIcons.alert,
+                                message.toString(),
+                                Colors.orange);
+                          } else {
                             setState(() {
                               showSpinner = false;
                             });
-                            _onSuccessToClockin(context,"Status","Check your location and internet service");
-                            print(response.body);
+                            alert.messageAlert(
+                                context,
+                                "Status",
+                                MdiIcons.close,
+                                "Check your internet service",
+                                Colors.red);
 
+                            print(response.body);
                           }
                         } catch (e) {
                           print(e);
@@ -246,14 +234,18 @@ bool showSpinner = false;
                           width: 80,
                           child: CircularProgressIndicator(
                             semanticsLabel: 'Tap here',
-
                             strokeWidth: 6.0,
                             value: controller.value,
                             backgroundColor: Color(0xFF55A1CD),
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.blueGrey),
                           ),
                         ),
-                        Icon(MdiIcons.clockCheckOutline,color: Color(0xFF55A1CD),size: 35.0,)
+                        Icon(
+                          MdiIcons.clockCheckOutline,
+                          color: Color(0xFF55A1CD),
+                          size: 35.0,
+                        )
                       ],
                     ),
                   ),
@@ -266,5 +258,3 @@ bool showSpinner = false;
     );
   }
 }
-
-

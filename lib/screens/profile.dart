@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/custom_component/inputfield.dart';
+import 'package:clockk/models/AlertModel.dart';
 import 'package:clockk/screens/timesheet.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,7 @@ class _BodyState extends State<Body> {
   String newpass = '';
   String confpass = '';
   bool showProfSpinner = true;
+  AlertMessage alert = AlertMessage();
 
   Future<void> getProfileData() async {
     var token = await FlutterSession().get('token');
@@ -147,12 +149,12 @@ class _BodyState extends State<Body> {
                 if (response.statusCode == 200) {
                   print("Done");
                   Navigator.pop(context);
-                  _onAlertPasswordChangeSuccessFail(
-                      context, "Success", MdiIcons.check, "Done", Colors.green);
+                  alert.messageAlert(context, 'Status', MdiIcons.check,
+                      "Success", Colors.green);
                 } else {
                   Navigator.pop(context);
-                  _onAlertPasswordChangeSuccessFail(context, "Failed",
-                      MdiIcons.close, "Try Again", Colors.red);
+                  alert.messageAlert(context, 'Status', MdiIcons.close,
+                      'failed try again', Colors.red);
                   print(response.statusCode);
                 }
               } catch (e) {
@@ -162,35 +164,6 @@ class _BodyState extends State<Body> {
             },
             child: Text(
               "Confirm",
-              style: TextStyle(color: Colors.white, fontSize: 15),
-            ),
-          )
-        ]).show();
-  }
-
-  _onAlertPasswordChangeSuccessFail(
-      context, String title, IconData icon, String Status, Color colors) {
-    Alert(
-        context: context,
-        title: title,
-        content: Column(
-          children: <Widget>[
-            Icon(
-              icon,
-              size: 35,
-              color: colors,
-            )
-          ],
-        ),
-        buttons: [
-          DialogButton(
-            width: 100.0,
-            color: Colors.lightBlueAccent,
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text(
-              Status,
               style: TextStyle(color: Colors.white, fontSize: 15),
             ),
           )
@@ -267,12 +240,13 @@ class _BodyState extends State<Body> {
                 if (response.statusCode == 200) {
                   print("Done");
                   Navigator.pop(context);
-                  _onAlertPasswordChangeSuccessFail(
-                      context, "Success", MdiIcons.check, "Done", Colors.green);
+                  alert.messageAlert(context, 'Status', MdiIcons.check,
+                      "Success", Colors.green);
+
                 } else {
                   Navigator.pop(context);
-                  _onAlertPasswordChangeSuccessFail(context, "Failed",
-                      MdiIcons.close, "Try Again", Colors.red);
+                  alert.messageAlert(context, 'Status', MdiIcons.close,
+                      'failed try again', Colors.red);
                   print(response.statusCode);
                 }
               } catch (e) {

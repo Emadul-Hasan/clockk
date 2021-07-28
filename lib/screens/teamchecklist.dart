@@ -1,13 +1,15 @@
 import 'dart:convert';
+
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:clockk/models/AlertModel.dart';
 import 'package:clockk/models/taskmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:http/http.dart' as http;
 
 import 'notification.dart';
 
@@ -18,8 +20,6 @@ class TeamCheckList extends StatefulWidget {
 }
 
 class _TeamCheckListState extends State<TeamCheckList> {
-
-
   List<MyTile> listOfTiles = <MyTile>[];
 
   Future<void> getTaskData() async {
@@ -37,43 +37,52 @@ class _TeamCheckListState extends State<TeamCheckList> {
       });
 
       if (response.statusCode == 200) {
-        try{
+        try {
           var data = jsonDecode(response.body);
           print(data);
           var allTask = data['data']['checklist'];
 
-          if(allTask != []){
-            for(var item in allTask){
+          if (allTask != []) {
+            for (var item in allTask) {
               print(item);
-              List<MyTile> subtasks= [];
-              if(item['task'] != []){
-                for(var items in item['task'] ){
-
+              List<MyTile> subtasks = [];
+              if (item['task'] != []) {
+                for (var items in item['task']) {
                   print(item['title']);
-                  subtasks.add(new MyTile(items['name'].toString(), false,items['id'].toString()));
+                  subtasks.add(new MyTile(
+                      items['name'].toString(), false, items['id'].toString()));
                   print(items);
-                }}
+                }
+              }
               setState(() {
-                if(subtasks != []){
-                  listOfTiles.add(new MyTile(item['title'].toString(), false,item['id'].toString(), subtasks),
+                if (subtasks != []) {
+                  listOfTiles.add(
+                    new MyTile(item['title'].toString(), false,
+                        item['id'].toString(), subtasks),
                   );
-                }else if (subtasks != [] || allTask != []){
-                  listOfTiles.add(new MyTile(item['title'].toString()==''?"Untitled Task": item['title'].toString(), false,item['id'].toString()==''?'--':item['id'].toString(), subtasks),
+                } else if (subtasks != [] || allTask != []) {
+                  listOfTiles.add(
+                    new MyTile(
+                        item['title'].toString() == ''
+                            ? "Untitled Task"
+                            : item['title'].toString(),
+                        false,
+                        item['id'].toString() == ''
+                            ? '--'
+                            : item['id'].toString(),
+                        subtasks),
                   );
                 }
               });
             }
           }
           setState(() {
-            listOfTiles.sort((a,b)=> a.children.length.compareTo(b.children.length));
+            listOfTiles
+                .sort((a, b) => a.children.length.compareTo(b.children.length));
           });
-
-
-
-        }catch(e){
+        } catch (e) {
           print(e);
         }
-
       } else {
         print(response.statusCode);
       }
@@ -87,51 +96,52 @@ class _TeamCheckListState extends State<TeamCheckList> {
     getTaskData();
     super.initState();
   }
+
   bool spinner = true;
   @override
   Widget build(BuildContext context) {
-
     setState(() {
-      if (listOfTiles.isNotEmpty){
-        listOfTiles.sort((a,b)=> a.children.length.compareTo(b.children.length));
+      if (listOfTiles.isNotEmpty) {
+        listOfTiles
+            .sort((a, b) => a.children.length.compareTo(b.children.length));
         spinner = false;
       }
     });
 
-
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Team Checklist"),(){
+      appBar: CustomAppBar(Text("Team Checklist"), () {
         Navigator.pushNamed(context, Notifications.id);
       }),
       body: ModalProgressHUD(
         inAsyncCall: spinner,
-        child: listOfTiles.isEmpty?Center(child: Text('Getting task.....')): RefreshIndicator(
-          onRefresh: getTaskData,
-          child: new ListView.builder(
-            itemBuilder: (BuildContext context, int index) {
-              var childIndex = -1;
-              if (childIndex < listOfTiles[index].children.length){
-                childIndex++;
-              }
-              else{
-                childIndex = listOfTiles[index].children.length -1;
-              }
-              print(listOfTiles[index].children.length);
+        child: listOfTiles.isEmpty
+            ? Center(child: Text('Getting task.....'))
+            : RefreshIndicator(
+                onRefresh: getTaskData,
+                child: new ListView.builder(
+                  itemBuilder: (BuildContext context, int index) {
+                    var childIndex = -1;
+                    if (childIndex < listOfTiles[index].children.length) {
+                      childIndex++;
+                    } else {
+                      childIndex = listOfTiles[index].children.length - 1;
+                    }
+                    print(listOfTiles[index].children.length);
 
-              return listOfTiles[index].children.isEmpty? Card(
-                child: new StuffInTiles(
-                    listOfTiles[index],
-                    listOfTiles[index].isDone
+                    return listOfTiles[index].children.isEmpty
+                        ? Card(
+                            child: new StuffInTiles(
+                                listOfTiles[index], listOfTiles[index].isDone),
+                          )
+                        : new StuffInTiles(
+                            listOfTiles[index],
+                            listOfTiles[index].children[childIndex].isDone,
+                          );
+                  },
+                  itemCount: listOfTiles.length,
                 ),
-              ): new StuffInTiles(
-                listOfTiles[index],
-                listOfTiles[index].children[childIndex].isDone,
-              );
-            },
-            itemCount: listOfTiles.length,
-          ),
-        ),
+              ),
       ),
     );
   }
@@ -161,7 +171,7 @@ class _StuffInTilesState extends State<StuffInTiles> {
         content: Column(
           children: <Widget>[
             TextField(
-              onChanged: (value){
+              onChanged: (value) {
                 comment = value;
               },
               obscureText: true,
@@ -176,13 +186,13 @@ class _StuffInTilesState extends State<StuffInTiles> {
           DialogButton(
             width: 60.0,
             color: Colors.lightBlueAccent,
-            onPressed: () async{
+            onPressed: () async {
               Navigator.pop(context);
               var token = await FlutterSession().get('token');
               print(token);
 
               String webUrl =
-                  "https://clockk.in/api/team_check_list_complete?task_id=$subtaskID&comment=${comment==''?' ': comment}";
+                  "https://clockk.in/api/team_check_list_complete?task_id=$subtaskID&comment=${comment == '' ? ' ' : comment}";
               var url = Uri.parse(webUrl);
               print(webUrl);
 
@@ -194,19 +204,18 @@ class _StuffInTilesState extends State<StuffInTiles> {
                 });
 
                 if (response.statusCode == 200) {
-
                   print(response.body);
                   var body = jsonDecode(response.body);
                   String message = body['message'];
-                  _onAlertMessage(context, message);
-
+                  alert.messageAlert(
+                      context, 'Status', MdiIcons.check, message, Colors.green);
                 } else {
-                  _onAlertMessage(context, 'Sending Failed');
+                  alert.messageAlert(context, 'Status', MdiIcons.close,
+                      'Sending failed try again', Colors.red);
                 }
               } catch (e) {
                 print(e);
               }
-
             },
             child: Text(
               "Send",
@@ -216,35 +225,12 @@ class _StuffInTilesState extends State<StuffInTiles> {
         ]).show();
   }
 
-  _onAlertMessage(context, String message) {
-
-    Alert(
-        context: context,
-        title: "Status",
-        content: Column(
-          children: <Widget>[
-            Text(message)
-          ],
-        ),
-        buttons: [
-          DialogButton(
-            width: 60.0,
-            color: Colors.lightBlueAccent,
-            onPressed: () async{
-              Navigator.pop(context);
-            },
-            child: Text(
-              "OK",
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          )
-        ]).show();
-  }
+  AlertMessage alert = AlertMessage();
 
   Widget _buildTiles(MyTile t) {
     if (t.children.isEmpty)
       return Visibility(
-        visible: t.isDone? false : true,
+        visible: t.isDone ? false : true,
         child: new ListTile(
             dense: true,
             enabled: true,
@@ -270,7 +256,8 @@ class _StuffInTilesState extends State<StuffInTiles> {
             title: new Text(
               t.title,
               style: TextStyle(
-                  decoration: t.isDone ? TextDecoration.lineThrough : null,),
+                decoration: t.isDone ? TextDecoration.lineThrough : null,
+              ),
             )),
       );
 
@@ -283,6 +270,3 @@ class _StuffInTilesState extends State<StuffInTiles> {
     );
   }
 }
-
-
-

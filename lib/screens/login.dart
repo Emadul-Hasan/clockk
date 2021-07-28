@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io' show Platform, exit;
 
 import 'package:clockk/custom_component/inputfield.dart';
+import 'package:clockk/models/AlertModel.dart';
 import 'package:clockk/screens/dashboard.dart';
 import 'package:clockk/screens/passrecoverypage.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,6 @@ import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 
 class Login extends StatefulWidget {
   static const id = "Login";
@@ -23,57 +23,7 @@ class _LoginState extends State<Login> {
   String password;
   bool showSpiner = false;
 
-  _onFaildToLogin(context) {
-    Alert(
-        context: context,
-        title: "Failed to login",
-        closeIcon: Icon(MdiIcons.close),
-        content: Center(
-          child: Text(
-            "User id or password don't matched",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.normal),
-          ),
-        ),
-        buttons: [
-          DialogButton(
-            child: Text(
-              "Try Again",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          )
-        ]).show();
-  }
-
-  _onFaildToLoginInternet(context) {
-    Alert(
-        context: context,
-        title: "Failed to login",
-        closeIcon: Icon(MdiIcons.close),
-        content: Center(
-          child: Text(
-            "Check your connectivity",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.normal),
-          ),
-        ),
-        buttons: [
-          DialogButton(
-            child: Text(
-              "Try Again",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          )
-        ]).show();
-  }
+  AlertMessage alert = AlertMessage();
 
   Future<bool> _onBackPressed() {
     return showDialog(
@@ -97,7 +47,6 @@ class _LoginState extends State<Login> {
                     } else {
                       exit(0);
                     }
-                    // Navigator.of(context).pop(true); //Will exit the App
                   },
                 )
               ],
@@ -160,7 +109,7 @@ class _LoginState extends State<Login> {
                   String webUrl =
                       "https://clockk.in/api/login?email=$email&password=$password";
                   var url = Uri.parse(webUrl);
-                  print(webUrl);
+
                   setState(() {
                     showSpiner = true;
                   });
@@ -169,7 +118,7 @@ class _LoginState extends State<Login> {
 
                     if (response.statusCode == 200) {
                       var data = jsonDecode(response.body);
-                      print(data);
+
                       var token = data['data'];
                       await FlutterSession().set("token", token['token']);
                       await FlutterSession().set('name', token['name']);
@@ -188,17 +137,22 @@ class _LoginState extends State<Login> {
                       setState(() {
                         showSpiner = false;
                       });
+                      alert.messageAlert(
+                          context,
+                          "Failed to login",
+                          MdiIcons.close,
+                          "User id or password do not matched",
+                          Colors.red);
 
-                      _onFaildToLogin(context);
                       print(response.statusCode);
                     }
                   } catch (e) {
                     setState(() {
                       showSpiner = false;
                     });
-                    _onFaildToLoginInternet(context);
+                    alert.messageAlert(context, "Failed to login",
+                        MdiIcons.close, "Check your connectivity", Colors.red);
 
-                    print("Error Caught");
                     print(e);
                   }
                 },

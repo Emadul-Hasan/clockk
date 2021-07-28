@@ -1,13 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:clockk/models/AlertModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
-import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 
 import 'notification.dart';
 
@@ -17,8 +17,8 @@ class ClockOut extends StatefulWidget {
   _ClockOutState createState() => _ClockOutState();
 }
 
-class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin {
-
+class _ClockOutState extends State<ClockOut>
+    with SingleTickerProviderStateMixin {
   var controller;
 
   @override
@@ -58,32 +58,8 @@ class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin
     });
   }
 
-  _onSuccessToClockOut(context, String title, String text) {
-    Alert(
-        context: context,
-        title:title,
-        closeIcon: Icon(MdiIcons.close),
-        content: Center(
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.normal),
-          ),
-        ),
-        buttons: [
-          DialogButton(
-            child: Text(
-              "Done",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          )
-        ]).show();
-  }
   bool showSpinner = false;
+  AlertMessage alert = AlertMessage();
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +68,7 @@ class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin
     // String ClockInTime = "9.00Am";
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Clock out"),(){
+      appBar: CustomAppBar(Text("Clock out"), () {
         Navigator.pushNamed(context, Notifications.id);
       }),
       body: Center(
@@ -129,7 +105,6 @@ class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin
                 child: FutureBuilder(
                     future: FlutterSession().get('name'),
                     builder: (context, snapshot) {
-                      // print(snapshot.data);
                       return Text(
                         snapshot.hasData ? snapshot.data : "User name missing",
                         style: TextStyle(
@@ -163,9 +138,8 @@ class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin
                 padding: EdgeInsets.only(top: 10.0),
                 child: GestureDetector(
                   onTapDown: (_) => controller.forward(),
-                  onTapUp: (_) async{
-                    if(controller.status == AnimationStatus.completed){
-
+                  onTapUp: (_) async {
+                    if (controller.status == AnimationStatus.completed) {
                       setState(() {
                         showSpinner = true;
                       });
@@ -183,30 +157,33 @@ class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin
                         });
                         var body = jsonDecode(response.body);
 
-
                         if (response.statusCode == 200) {
                           setState(() {
                             showSpinner = false;
                           });
                           String message = body['message'];
-
-                          _onSuccessToClockOut(context,"Status",message.toString());
-                        }else if(response.statusCode == 404){
-
+                          alert.messageAlert(context, "Status", MdiIcons.check,
+                              message.toString(), Colors.green);
+                        } else if (response.statusCode == 404) {
                           setState(() {
                             showSpinner = false;
                           });
                           String message = body['data']['error'];
 
-                          _onSuccessToClockOut(context,"Status",message.toString());
-                        }
-                        else {
+                          alert.messageAlert(context, "Status", MdiIcons.alert,
+                              message.toString(), Colors.orange);
+                        } else {
                           setState(() {
                             showSpinner = false;
                           });
-                          _onSuccessToClockOut(context,"Status","Check your location and internet service");
-                          print(response.body);
+                          alert.messageAlert(
+                              context,
+                              "Status",
+                              MdiIcons.alert,
+                              'Keep active your location and internet service',
+                              Colors.orange);
 
+                          print(response.body);
                         }
                       } catch (e) {
                         print(e);
@@ -225,14 +202,18 @@ class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin
                         width: 80,
                         child: CircularProgressIndicator(
                           semanticsLabel: 'Tap here',
-
                           strokeWidth: 6.0,
                           value: controller.value,
                           backgroundColor: Color(0xFF55A1CD),
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.blueGrey),
                         ),
                       ),
-                      Icon(MdiIcons.clockFast,color: Color(0xFF55A1CD),size: 35.0,)
+                      Icon(
+                        MdiIcons.clockFast,
+                        color: Color(0xFF55A1CD),
+                        size: 35.0,
+                      )
                     ],
                   ),
                 ),
@@ -244,5 +225,3 @@ class _ClockOutState extends State<ClockOut> with SingleTickerProviderStateMixin
     );
   }
 }
-
-

@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:clockk/models/AlertModel.dart';
+import 'package:clockk/models/meetingDataSource.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import 'notification.dart';
@@ -130,35 +131,7 @@ class _RotaState extends State<Rota> {
     }
   }
 
-  _onSuccessToClockin(context, String title, String text) {
-    Alert(
-        context: context,
-        title: title,
-        style: AlertStyle(
-          titleStyle: TextStyle(
-              fontSize: 1.0,
-              fontWeight: FontWeight.normal,
-              color: Colors.white),
-        ),
-        closeIcon: Icon(MdiIcons.close),
-        content: Center(
-          child: Column(
-            children: [
-              Icon(
-                MdiIcons.alert,
-                color: Colors.orange,
-                size: 50.0,
-              ),
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16.0),
-              ),
-            ],
-          ),
-        ),
-        buttons: []).show();
-  }
+  AlertMessage alert = AlertMessage();
 
   @override
   Widget build(BuildContext context) {
@@ -233,8 +206,8 @@ class _RotaState extends State<Rota> {
                         print(dateFrom);
                         print(dateTo);
                       } else {
-                        _onSuccessToClockin(context, 'Error',
-                            'Start date or end date is missing');
+                        alert.messageAlert(context, 'Error', MdiIcons.alert,
+                            'Start date or end date is missing', Colors.orange);
                       }
                     });
                   },
@@ -264,11 +237,5 @@ class _RotaState extends State<Rota> {
         ],
       ),
     );
-  }
-}
-
-class MeetingDataSource extends CalendarDataSource {
-  MeetingDataSource(List<Appointment> source) {
-    appointments = source;
   }
 }

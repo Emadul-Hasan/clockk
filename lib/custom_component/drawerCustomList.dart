@@ -12,6 +12,8 @@ import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
+import 'CustomTile.dart';
+
 class DrawerCustomList extends StatefulWidget {
   const DrawerCustomList({
     Key key,
@@ -162,43 +164,6 @@ class _DrawerCustomListState extends State<DrawerCustomList> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class CustomListTile extends StatelessWidget {
-  final String menuTitle;
-  final IconData icon;
-  final Function action;
-  CustomListTile(
-      {@required this.menuTitle, @required this.icon, @required this.action});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(
-        menuTitle,
-        style: TextStyle(
-            color: Colors.black, fontSize: 15.0, fontWeight: FontWeight.w400),
-      ),
-      leading: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(blurRadius: 10, color: Colors.black12, spreadRadius: 2)
-          ],
-        ),
-        child: CircleAvatar(
-          child: Icon(
-            icon,
-            color: Colors.black,
-            size: 25.0,
-          ),
-          backgroundColor: Colors.white,
-        ),
-      ),
-      onTap: action,
     );
   }
 }
