@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import 'notification.dart';
@@ -88,11 +91,73 @@ class _RotaState extends State<Rota> {
 
   bool showSpinner = true;
   final CalendarController _controller = CalendarController();
+  DateTime pickerDefault;
+  DateTime startDate;
+  DateTime endDate;
 
   @override
   void initState() {
     getRotaData();
+    pickerDefault = DateTime.now();
     super.initState();
+  }
+
+  _pickerStartDate() async {
+    DateTime date = await showDatePicker(
+      context: context,
+      initialDate: pickerDefault,
+      firstDate: DateTime(DateTime.now().year - 5),
+      lastDate: DateTime(DateTime.now().year + 5),
+    );
+    if (date != null) {
+      setState(() {
+        startDate = date;
+      });
+    }
+  }
+
+  _pickerEndDate() async {
+    DateTime date = await showDatePicker(
+      context: context,
+      initialDate: pickerDefault,
+      firstDate: DateTime(DateTime.now().year - 5),
+      lastDate: DateTime(DateTime.now().year + 5),
+    );
+    if (date != null) {
+      setState(() {
+        endDate = date;
+      });
+    }
+  }
+
+  _onSuccessToClockin(context, String title, String text) {
+    Alert(
+        context: context,
+        title: title,
+        style: AlertStyle(
+          titleStyle: TextStyle(
+              fontSize: 1.0,
+              fontWeight: FontWeight.normal,
+              color: Colors.white),
+        ),
+        closeIcon: Icon(MdiIcons.close),
+        content: Center(
+          child: Column(
+            children: [
+              Icon(
+                MdiIcons.alert,
+                color: Colors.orange,
+                size: 50.0,
+              ),
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16.0),
+              ),
+            ],
+          ),
+        ),
+        buttons: []).show();
   }
 
   @override
@@ -104,6 +169,83 @@ class _RotaState extends State<Rota> {
       }),
       body: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                width: 100.0,
+                height: 35.0,
+                // color: Colors.grey,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                      color: Colors.grey, width: 1.0, style: BorderStyle.solid),
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+                child: TextButton(
+                    onPressed: _pickerStartDate,
+                    child: Text(startDate == null
+                        ? 'Start Date'
+                        : '${startDate.day}.${startDate.month}.${startDate.year}')),
+              ),
+              Text(
+                ' - ',
+                style: TextStyle(fontSize: 20.0, color: Colors.blue),
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                height: 35.0,
+                width: 100.0,
+                // color: Colors.grey,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                      color: Colors.grey, width: 1.0, style: BorderStyle.solid),
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+                child: TextButton(
+                    onPressed: _pickerEndDate,
+                    child: Text(endDate == null
+                        ? 'End Date'
+                        : '${endDate.day}.${endDate.month}.${endDate.year}')),
+              ),
+              SizedBox(
+                width: 5.0,
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                height: 35.0,
+                width: 100.0,
+                // color: Colors.grey,
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  border: Border.all(
+                      color: Colors.grey, width: 1.0, style: BorderStyle.solid),
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    setState(() {
+                      if (startDate != null && endDate != null) {
+                        String dateFrom =
+                            '${startDate.day}.${startDate.month}.${startDate.year}';
+                        String dateTo =
+                            '${endDate.day}.${endDate.month}.${endDate.year}';
+                        print(dateFrom);
+                        print(dateTo);
+                      } else {
+                        _onSuccessToClockin(context, 'Error',
+                            'Start date or end date is missing');
+                      }
+                    });
+                  },
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
           Expanded(
             child: SfCalendar(
               controller: _controller,
@@ -119,11 +261,6 @@ class _RotaState extends State<Rota> {
               dataSource: MeetingDataSource(meetings),
             ),
           ),
-          Row(
-            children: [
-              ElevatedButton(onPressed: () {}, child: Text('fvfc')),
-            ],
-          )
         ],
       ),
     );

@@ -9,6 +9,7 @@ import 'package:clockk/screens/teamchecklist.dart';
 import 'package:clockk/screens/timesheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class DrawerCustomList extends StatefulWidget {
@@ -136,9 +137,27 @@ class _DrawerCustomListState extends State<DrawerCustomList> {
                 menuTitle: 'Logout',
                 icon: MdiIcons.logout,
                 action: () async {
-                  print("Started");
-                  await FlutterSession().set('token', '');
-                  Navigator.pushReplacementNamed(context, Login.id);
+                  var token = await FlutterSession().get('token');
+                  String webUrl = "https://clockk.in/api/logout";
+                  var url = Uri.parse(webUrl);
+                  print(url);
+                  try {
+                    http.Response response = await http.get(url, headers: {
+                      'Content-type': 'application/json',
+                      'Accept': 'application/json',
+                      'Authorization': token
+                    });
+
+                    if (response.statusCode == 200) {
+                      print('Done');
+                      await FlutterSession().set('token', '');
+                      Navigator.pushReplacementNamed(context, Login.id);
+                    } else {
+                      print(response.statusCode);
+                    }
+                  } catch (e) {
+                    print(e);
+                  }
                 }),
           ],
         ),
