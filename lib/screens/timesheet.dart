@@ -1,11 +1,12 @@
+import 'dart:convert';
+
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 import 'notification.dart';
 
@@ -87,7 +88,7 @@ class _TimeSheetState extends State<TimeSheet> {
     'November',
     'December',
   ];
-  List yearString=[
+  List yearString = [
     '2021',
     '2022',
     '2023',
@@ -98,17 +99,20 @@ class _TimeSheetState extends State<TimeSheet> {
     '2028',
     '2029',
     '2030',
-
   ];
 
   bool showSpinner = true;
-  String valueChoosen;
+  String monthChoosen;
+  String yearChoosen;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(onPressed:getTimeSheetData,child: Icon(MdiIcons.refresh),),
+      floatingActionButton: FloatingActionButton(
+        onPressed: getTimeSheetData,
+        child: Icon(MdiIcons.refresh),
+      ),
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Time Sheet"),(){
+      appBar: CustomAppBar(Text("Time Sheet"), () {
         Navigator.pushNamed(context, Notifications.id);
       }),
       body: ModalProgressHUD(
@@ -116,46 +120,113 @@ class _TimeSheetState extends State<TimeSheet> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(width: 20.0,),
-
-                Expanded(child: Container(height: 40.0,margin: EdgeInsets.only(top: 5.0,right: 3.0),padding: EdgeInsets.only(left: 5.0,right: 5.0, top: 0.0, bottom: 0.0),decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey,width: 1.0,style: BorderStyle.solid),borderRadius: BorderRadius.circular(5.0),
-                ),child: DropdownButton(isExpanded: true,underline: SizedBox(),dropdownColor: Colors.white,value: valueChoosen,onChanged: (value){
-                  setState(() {
-                    valueChoosen = value;
-                  });
-                },hint:Text('Select Month') ,items: monthString.map((valueItem){
-                  return DropdownMenuItem(value: valueItem,child: Text(valueItem));
-                } ).toList(),)),),
-                Expanded(child: Container(height: 40.0,margin: EdgeInsets.only(top: 5.0),padding: EdgeInsets.only(left: 5.0,right: 5.0, top: 0.0, bottom: 0.0),decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey,width: 1.0,style: BorderStyle.solid),borderRadius: BorderRadius.circular(5.0),
-                ),child: DropdownButton(isExpanded: true,underline: SizedBox(),dropdownColor: Colors.white,value: valueChoosen,onChanged: (value){
-                  setState(() {
-                    valueChoosen = value;
-                  });
-                },hint:Text('Select year') ,items: yearString.map((valueItem){
-                  return DropdownMenuItem(value: valueItem,child: Text(valueItem));
-                } ).toList(),)),),
-
-                  SizedBox(width: 20.0,),
-
-
-              ],
+                  SizedBox(
+                    width: 20.0,
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 40.0,
+                      margin: EdgeInsets.only(top: 5.0, right: 3.0),
+                      padding: EdgeInsets.only(
+                          left: 5.0, right: 5.0, top: 0.0, bottom: 0.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: Colors.grey,
+                            width: 1.0,
+                            style: BorderStyle.solid),
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      child: DropdownButton(
+                        isExpanded: true,
+                        underline: SizedBox(),
+                        dropdownColor: Colors.white,
+                        value: monthChoosen,
+                        onChanged: (value) {
+                          setState(() {
+                            monthChoosen = value;
+                          });
+                        },
+                        hint: Text('Select Month'),
+                        items: monthString.map(
+                          (valueItem) {
+                            return DropdownMenuItem(
+                                value: valueItem, child: Text(valueItem));
+                          },
+                        ).toList(),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 40.0,
+                      margin: EdgeInsets.only(top: 5.0),
+                      padding: EdgeInsets.only(
+                          left: 5.0, right: 5.0, top: 0.0, bottom: 0.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: Colors.grey,
+                            width: 1.0,
+                            style: BorderStyle.solid),
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      child: DropdownButton(
+                        isExpanded: true,
+                        underline: SizedBox(),
+                        dropdownColor: Colors.white,
+                        value: yearChoosen,
+                        onChanged: (value) {
+                          setState(() {
+                            yearChoosen = value;
+                          });
+                        },
+                        hint: Text('Select year'),
+                        items: yearString.map((valueItem) {
+                          return DropdownMenuItem(
+                            value: valueItem,
+                            child: Text(valueItem),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 20.0,
+                  ),
+                ],
               ),
-              Row(children: [
-                SizedBox(width: 20.0,),
-                Expanded(child: Container(margin: EdgeInsets.only(left: 1.0,right: 1.0),child: ElevatedButton(onPressed: (){}, child: Text('Get Time Sheet')))),
-                Expanded(child: Container(margin: EdgeInsets.only(left: 1.0,right: 1.0),child: ElevatedButton(onPressed: (){}, child: Text('Reset')))),
-                SizedBox(width: 20.0,),
-
-              ],
+              Row(
+                children: [
+                  SizedBox(
+                    width: 20.0,
+                  ),
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(left: 1.0, right: 1.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            print(monthChoosen);
+                            print(yearChoosen);
+                          });
+                        },
+                        child: Text('Get Time Sheet'),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                      child: Container(
+                          margin: EdgeInsets.only(left: 1.0, right: 1.0),
+                          child: ElevatedButton(
+                              onPressed: () {}, child: Text('Reset')))),
+                  SizedBox(
+                    width: 20.0,
+                  ),
+                ],
               ),
               DataTable(
-
                 columnSpacing: 20.0,
                 horizontalMargin: 20.0,
                 columns: <DataColumn>[

@@ -1,10 +1,11 @@
+import 'dart:convert';
+
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
-import 'package:flutter_session/flutter_session.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
+import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import 'notification.dart';
 
@@ -86,6 +87,7 @@ class _RotaState extends State<Rota> {
   List<Appointment> meetings = [];
 
   bool showSpinner = true;
+  final CalendarController _controller = CalendarController();
 
   @override
   void initState() {
@@ -97,13 +99,32 @@ class _RotaState extends State<Rota> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: DrawerCustomList(),
-      appBar: CustomAppBar(Text("Rota"),(){
+      appBar: CustomAppBar(Text("Rota"), () {
         Navigator.pushNamed(context, Notifications.id);
       }),
-      body: SfCalendar(
-        view: CalendarView.week,
-        firstDayOfWeek: 6,
-        dataSource: MeetingDataSource(meetings),
+      body: Column(
+        children: [
+          Expanded(
+            child: SfCalendar(
+              controller: _controller,
+              allowedViews: [
+                CalendarView.month,
+                CalendarView.week,
+                CalendarView.workWeek,
+                CalendarView.timelineDay,
+                CalendarView.timelineWeek,
+              ],
+              view: CalendarView.week,
+              firstDayOfWeek: 6,
+              dataSource: MeetingDataSource(meetings),
+            ),
+          ),
+          Row(
+            children: [
+              ElevatedButton(onPressed: () {}, child: Text('fvfc')),
+            ],
+          )
+        ],
       ),
     );
   }
