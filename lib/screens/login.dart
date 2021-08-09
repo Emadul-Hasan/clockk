@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform, exit;
 
 import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/models/AlertModel.dart';
+import 'package:clockk/models/connectivityCheck.dart';
 import 'package:clockk/screens/dashboard.dart';
 import 'package:clockk/screens/passrecoverypage.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,15 @@ class _LoginState extends State<Login> {
   bool showSpiner = false;
 
   AlertMessage alert = AlertMessage();
+
+  CheckConnectivity _connectivityCheck = CheckConnectivity();
+  void checkConnection() async {
+    String resultString = await _connectivityCheck.checkingConnection();
+    if (resultString != null) {
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, resultString, Colors.red);
+    }
+  }
 
   Future<bool> _onBackPressed() {
     return showDialog(
@@ -54,6 +65,13 @@ class _LoginState extends State<Login> {
           },
         ) ??
         false;
+  }
+
+  @override
+  void initState() {
+    checkConnection();
+
+    super.initState();
   }
 
   @override

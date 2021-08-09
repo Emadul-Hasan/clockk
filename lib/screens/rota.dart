@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/models/AlertModel.dart';
+import 'package:clockk/models/connectivityCheck.dart';
 import 'package:clockk/models/meetingDataSource.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class Rota extends StatefulWidget {
 
 class _RotaState extends State<Rota> {
   Future<void> getRotaData() async {
+    meetings.clear();
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/rota";
     var url = Uri.parse(webUrl);
@@ -38,6 +40,9 @@ class _RotaState extends State<Rota> {
         var value = data['data'];
         // print(value);
         for (var item in value) {
+          setState(() {
+            flag = 0;
+          });
           var date = item['date'].split('-');
           var sTime = item['start_time'].split(':');
           var eTime = item['end_time'].split(':');
@@ -62,7 +67,7 @@ class _RotaState extends State<Rota> {
             meetings.add(Appointment(
               startTime: taskDateTimeStart,
               endTime: taskDateTimeEnd,
-              subject: '$taskDateTimeStart to $taskDateTimeEnd',
+              subject: '${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]} to ${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]}',
               color: color[index],
             ));
             if (index == 3) {
@@ -96,13 +101,6 @@ class _RotaState extends State<Rota> {
   DateTime startDate;
   DateTime endDate;
 
-  @override
-  void initState() {
-    getRotaData();
-    pickerDefault = DateTime.now();
-    super.initState();
-  }
-
   _pickerStartDate() async {
     DateTime date = await showDatePicker(
       context: context,
@@ -132,6 +130,101 @@ class _RotaState extends State<Rota> {
   }
 
   AlertMessage alert = AlertMessage();
+  int flag = 0;
+
+  Future<void> getShortedRotaData(String fromDate, String toDate) async {
+    setState(() {
+      showSpinner = true;
+    });
+    meetings.clear();
+    var token = await FlutterSession().get('token');
+    String webUrl =
+        "https://clockk.in/api/rota?start_date=$fromDate&end_date=$toDate";
+    var url = Uri.parse(webUrl);
+    print(webUrl);
+    try {
+      http.Response response = await http.get(url, headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token
+      });
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        print(data);
+        var value = data['data'];
+        print(value);
+        if (value?.isEmpty ?? true) {
+          flag = 1;
+          setState(() {
+            showSpinner = false;
+          });
+        } else {
+          flag = 0;
+          setState(() {
+            _controller.displayDate = startDate;
+            _controller.view = CalendarView.month;
+          });
+        }
+        for (var item in value) {
+          var date = item['date'].split('-');
+          var sTime = item['start_time'].split(':');
+          var eTime = item['end_time'].split(':');
+
+          setState(() {
+            showSpinner = false;
+            DateTime taskDateTimeStart = DateTime(
+              int.parse(date[0]),
+              int.parse(date[1]),
+              int.parse(date[2]),
+              int.parse(sTime[0]),
+              int.parse(sTime[1]),
+            );
+            DateTime taskDateTimeEnd = DateTime(
+              int.parse(date[0]),
+              int.parse(date[1]),
+              int.parse(date[2]),
+              int.parse(eTime[0]),
+              int.parse(eTime[1]),
+            );
+            meetings.add(Appointment(
+              startTime: taskDateTimeStart,
+              endTime: taskDateTimeEnd,
+              subject: '${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]} to ${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]}',
+              color: color[index],
+            ));
+            if (index == 3) {
+              index = 0;
+            } else {
+              index++;
+            }
+          });
+        }
+        print(meetings);
+      } else {
+        print(response.statusCode);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  CheckConnectivity _connectivityCheck = CheckConnectivity();
+  void checkConnection() async {
+    String resultString = await _connectivityCheck.checkingConnection();
+    if (resultString != null) {
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, resultString, Colors.red);
+    }
+  }
+
+  @override
+  void initState() {
+    checkConnection();
+    getRotaData();
+    pickerDefault = DateTime.now();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -200,11 +293,12 @@ class _RotaState extends State<Rota> {
                     setState(() {
                       if (startDate != null && endDate != null) {
                         String dateFrom =
-                            '${startDate.day}.${startDate.month}.${startDate.year}';
+                            '${startDate.year}-${startDate.month}-${startDate.day}';
                         String dateTo =
-                            '${endDate.day}.${endDate.month}.${endDate.year}';
+                            '${endDate.year}-${endDate.month}-${endDate.day}';
                         print(dateFrom);
                         print(dateTo);
+                        getShortedRotaData(dateFrom, dateTo);
                       } else {
                         alert.messageAlert(context, 'Error', MdiIcons.alert,
                             'Start date or end date is missing', Colors.orange);
@@ -225,13 +319,17 @@ class _RotaState extends State<Rota> {
               allowedViews: [
                 CalendarView.month,
                 CalendarView.week,
-                CalendarView.workWeek,
-                CalendarView.timelineDay,
-                CalendarView.timelineWeek,
+                CalendarView.day,
               ],
-              view: CalendarView.week,
+              view: CalendarView.month,
               firstDayOfWeek: 6,
               dataSource: MeetingDataSource(meetings),
+              monthViewSettings: MonthViewSettings(
+                  showAgenda: true,
+                  agendaViewHeight: 110,
+                  navigationDirection: MonthNavigationDirection.horizontal,
+                  appointmentDisplayMode:
+                      MonthAppointmentDisplayMode.appointment),
             ),
           ),
         ],

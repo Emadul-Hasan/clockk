@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:clockk/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
+
 import 'login.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // TODO: implement initState
     super.initState();
 
-    Timer(Duration(seconds: 7), () async {
+    Timer(Duration(seconds: 5), () async {
       dynamic token = await FlutterSession().get('token');
       if (token == null || token == '') {
         print(token);

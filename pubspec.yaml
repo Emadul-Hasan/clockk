@@ -25,6 +25,7 @@ dependencies:
   geolocator: ^6.2.1
   image_picker: ^0.8.0+4
   dio: ^4.0.0
+  connectivity: ^3.0.6
 
 
 

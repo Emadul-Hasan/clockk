@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/models/AlertModel.dart';
+import 'package:clockk/models/connectivityCheck.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
@@ -21,8 +22,18 @@ class _ClockOutState extends State<ClockOut>
     with SingleTickerProviderStateMixin {
   var controller;
 
+  CheckConnectivity _connectivityCheck = CheckConnectivity();
+  void checkConnection() async {
+    String resultString = await _connectivityCheck.checkingConnection();
+    if (resultString != null) {
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, resultString, Colors.red);
+    }
+  }
+
   @override
   void initState() {
+    checkConnection();
     Timer.periodic(Duration(seconds: 1), (Timer t) => timeUpdate());
     controller =
         AnimationController(vsync: this, duration: Duration(seconds: 1));
@@ -54,7 +65,7 @@ class _ClockOutState extends State<ClockOut>
   void timeUpdate() {
     setState(() {
       timeNow = DateTime.now();
-      formattedTime = "${timeNow.hour}:${timeNow.minute}:${timeNow.second}";
+      formattedTime = "${timeNow.hour.toString().padLeft(2,'0')}:${timeNow.minute.toString().padLeft(2,'0')}:${timeNow.second.toString().padLeft(2,'0')}";
     });
   }
 
@@ -82,7 +93,7 @@ class _ClockOutState extends State<ClockOut>
               Container(
                 child: Text(
                   formattedTime == null
-                      ? "${timeNow.hour}:${timeNow.minute}:${timeNow.second}"
+                      ? "${timeNow.hour.toString().padLeft(2,'0')}:${timeNow.minute.toString().padLeft(2,'0')}:${timeNow.second.toString().padLeft(2,'0')}"
                       : formattedTime,
                   style: TextStyle(
                       fontSize: 26.0,
@@ -90,13 +101,7 @@ class _ClockOutState extends State<ClockOut>
                       color: Color(0xFF55A1CD)),
                 ),
               ),
-              // Container(
-              //   padding: EdgeInsets.only(top: 10.0),
-              //   child: Text(
-              //     "Clock in at $ClockInTime",
-              //     style: TextStyle(color: Color(0xFF55A1CD)),
-              //   ),
-              // ),
+
               SizedBox(
                 height: 50.0,
               ),
@@ -198,22 +203,27 @@ class _ClockOutState extends State<ClockOut>
                     alignment: Alignment.center,
                     children: [
                       SizedBox(
-                        height: 80,
-                        width: 80,
+                        height: 120,
+                        width: 120,
                         child: CircularProgressIndicator(
                           semanticsLabel: 'Tap here',
-                          strokeWidth: 6.0,
+                          strokeWidth: 8.0,
                           value: controller.value,
                           backgroundColor: Color(0xFF55A1CD),
                           valueColor:
                               AlwaysStoppedAnimation<Color>(Colors.blueGrey),
                         ),
                       ),
-                      Icon(
-                        MdiIcons.clockFast,
-                        color: Color(0xFF55A1CD),
-                        size: 35.0,
-                      )
+                      Text("Tap & Hold",
+                          style: TextStyle(
+                              color: Color(0xFF55A1CD),
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.bold))
+                      // Icon(
+                      //   MdiIcons.clockFast,
+                      //   color: Color(0xFF55A1CD),
+                      //   size: 35.0,
+                      // )
                     ],
                   ),
                 ),

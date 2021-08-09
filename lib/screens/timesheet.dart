@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
+import 'package:clockk/models/AlertModel.dart';
+import 'package:clockk/models/connectivityCheck.dart';
+import 'package:clockk/models/userEntryModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
 import 'package:http/http.dart' as http;
@@ -17,64 +20,7 @@ class TimeSheet extends StatefulWidget {
 }
 
 class _TimeSheetState extends State<TimeSheet> {
-  Future<void> getTimeSheetData() async {
-    userEntryRecord.clear();
-    setState(() {
-      showSpinner = true;
-    });
-    var token = await FlutterSession().get('token');
-    String webUrl = "https://clockk.in/api/timesheet";
-    var url = Uri.parse(webUrl);
-    print(webUrl);
-    try {
-      http.Response response = await http.get(url, headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': token
-      });
-
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        print(data);
-        var value = data['data'];
-        print(value);
-        for (var item in value) {
-          print(item);
-          setState(() {
-            userEntryRecord.add(UserEntryModel(
-                item['date'].toString() == "null"
-                    ? '--'
-                    : item['date'].toString(),
-                item['in_time'].toString() == "null"
-                    ? '--'
-                    : item['in_time'].toString(),
-                item['out_time'].toString() == "null"
-                    ? '--'
-                    : item['out_time'].toString(),
-                item['total_hour'].toString() == "null"
-                    ? '--'
-                    : item['total_hour'].toString()));
-            showSpinner = false;
-          });
-        }
-      } else {
-        print(response.statusCode);
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  List<UserEntryModel> userEntryRecord = [];
-
-  @override
-  void initState() {
-    getTimeSheetData();
-    super.initState();
-  }
-
   List monthString = [
-    // 'Month',
     'January',
     'February',
     'March',
@@ -104,6 +50,133 @@ class _TimeSheetState extends State<TimeSheet> {
   bool showSpinner = true;
   String monthChoosen;
   String yearChoosen;
+  int flag = 0;
+  List<UserEntryModel> userEntryRecord = [];
+
+  Future<void> getTimeSheetData() async {
+    userEntryRecord.clear();
+    monthChoosen = null;
+    yearChoosen = null;
+    setState(() {
+      showSpinner = true;
+    });
+    var token = await FlutterSession().get('token');
+    String webUrl = "https://clockk.in/api/timesheet";
+    var url = Uri.parse(webUrl);
+    print(webUrl);
+    try {
+      http.Response response = await http.get(url, headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token
+      });
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        print(data);
+        var value = data['data'];
+        print(value);
+        for (var item in value) {
+          flag = 0;
+          print(item);
+          setState(() {
+            showSpinner = false;
+            userEntryRecord.add(UserEntryModel(
+                item['date'].toString() == "null"
+                    ? '--'
+                    : item['date'].toString(),
+                item['in_time'].toString() == "null"
+                    ? '--'
+                    : item['in_time'].toString(),
+                item['out_time'].toString() == "null"
+                    ? '--'
+                    : item['out_time'].toString(),
+                item['total_hour'].toString() == "null"
+                    ? '--'
+                    : item['total_hour'].toString()));
+          });
+        }
+      } else {
+        print(response.statusCode);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> getShortedTimeSheetData(String month, String year) async {
+    userEntryRecord.clear();
+    setState(() {
+      showSpinner = true;
+    });
+    var token = await FlutterSession().get('token');
+    String webUrl = "https://clockk.in/api/timesheet?month=$month&year=$year";
+    var url = Uri.parse(webUrl);
+    print(webUrl);
+    try {
+      http.Response response = await http.get(url, headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token
+      });
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        print(data);
+
+        var value = data['data'];
+        if (value?.isEmpty ?? true) {
+          flag = 1;
+          setState(() {
+            showSpinner = false;
+          });
+        } else {
+          flag = 0;
+        }
+        for (var item in value) {
+          print(item);
+          setState(() {
+            showSpinner = false;
+            userEntryRecord.add(UserEntryModel(
+                item['date'].toString() == "null"
+                    ? '--'
+                    : item['date'].toString(),
+                item['in_time'].toString() == "null"
+                    ? '--'
+                    : item['in_time'].toString(),
+                item['out_time'].toString() == "null"
+                    ? '--'
+                    : item['out_time'].toString(),
+                item['total_hour'].toString() == "null"
+                    ? '--'
+                    : item['total_hour'].toString()));
+          });
+        }
+      } else {
+        print(response.statusCode);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  AlertMessage alert = AlertMessage();
+  CheckConnectivity _connectivityCheck = CheckConnectivity();
+  void checkConnection() async {
+    String resultString = await _connectivityCheck.checkingConnection();
+    if (resultString != null) {
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, resultString, Colors.red);
+    }
+  }
+
+  @override
+  void initState() {
+    checkConnection();
+    getTimeSheetData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,156 +188,273 @@ class _TimeSheetState extends State<TimeSheet> {
       appBar: CustomAppBar(Text("Time Sheet"), () {
         Navigator.pushNamed(context, Notifications.id);
       }),
-      body: ModalProgressHUD(
-        inAsyncCall: showSpinner,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 20.0,
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 40.0,
-                      margin: EdgeInsets.only(top: 5.0, right: 3.0),
-                      padding: EdgeInsets.only(
-                          left: 5.0, right: 5.0, top: 0.0, bottom: 0.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: Colors.grey,
-                            width: 1.0,
-                            style: BorderStyle.solid),
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      child: DropdownButton(
-                        isExpanded: true,
-                        underline: SizedBox(),
-                        dropdownColor: Colors.white,
-                        value: monthChoosen,
-                        onChanged: (value) {
-                          setState(() {
-                            monthChoosen = value;
-                          });
-                        },
-                        hint: Text('Select Month'),
-                        items: monthString.map(
-                          (valueItem) {
-                            return DropdownMenuItem(
-                                value: valueItem, child: Text(valueItem));
-                          },
-                        ).toList(),
-                      ),
+      body: flag == 1
+          ? Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 20.0,
                     ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 40.0,
-                      margin: EdgeInsets.only(top: 5.0),
-                      padding: EdgeInsets.only(
-                          left: 5.0, right: 5.0, top: 0.0, bottom: 0.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: Colors.grey,
-                            width: 1.0,
-                            style: BorderStyle.solid),
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      child: DropdownButton(
-                        isExpanded: true,
-                        underline: SizedBox(),
-                        dropdownColor: Colors.white,
-                        value: yearChoosen,
-                        onChanged: (value) {
-                          setState(() {
-                            yearChoosen = value;
-                          });
-                        },
-                        hint: Text('Select year'),
-                        items: yearString.map((valueItem) {
-                          return DropdownMenuItem(
-                            value: valueItem,
-                            child: Text(valueItem),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 20.0,
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  SizedBox(
-                    width: 20.0,
-                  ),
-                  Expanded(
-                    child: Container(
-                      margin: EdgeInsets.only(left: 1.0, right: 1.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            print(monthChoosen);
-                            print(yearChoosen);
-                          });
-                        },
-                        child: Text('Get Time Sheet'),
-                      ),
-                    ),
-                  ),
-                  Expanded(
+                    Expanded(
                       child: Container(
-                          margin: EdgeInsets.only(left: 1.0, right: 1.0),
-                          child: ElevatedButton(
-                              onPressed: () {}, child: Text('Reset')))),
-                  SizedBox(
-                    width: 20.0,
-                  ),
-                ],
-              ),
-              DataTable(
-                columnSpacing: 20.0,
-                horizontalMargin: 20.0,
-                columns: <DataColumn>[
-                  DataColumn(label: Text("Date")),
-                  DataColumn(label: Text("Clock in")),
-                  DataColumn(label: Text("Clock Out")),
-                  DataColumn(label: Text("Total Hour")),
-                ],
-                rows: userEntryRecord
-                    .map(
-                      (user) => DataRow(
-                        cells: [
-                          DataCell(
-                            Center(child: Text(user.userName)),
-                          ),
-                          DataCell(Center(child: Text(user.enterTime))),
-                          DataCell(Center(child: Text(user.exitTime))),
-                          DataCell(Center(
-                              child: Text(
-                            user.totalHour,
-                          ))),
-                        ],
+                        height: 40.0,
+                        margin: EdgeInsets.only(top: 5.0, right: 3.0),
+                        padding: EdgeInsets.only(
+                            left: 5.0, right: 5.0, top: 0.0, bottom: 0.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Colors.grey,
+                              width: 1.0,
+                              style: BorderStyle.solid),
+                          borderRadius: BorderRadius.circular(5.0),
+                        ),
+                        child: DropdownButton(
+                          isExpanded: true,
+                          underline: SizedBox(),
+                          dropdownColor: Colors.white,
+                          value: monthChoosen,
+                          onChanged: (value) {
+                            setState(() {
+                              monthChoosen = value;
+                            });
+                          },
+                          hint: Text('Select Month'),
+                          items: monthString.map(
+                            (valueItem) {
+                              return DropdownMenuItem(
+                                  value: valueItem, child: Text(valueItem));
+                            },
+                          ).toList(),
+                        ),
                       ),
-                    )
-                    .toList(),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 40.0,
+                        margin: EdgeInsets.only(top: 5.0),
+                        padding: EdgeInsets.only(
+                            left: 5.0, right: 5.0, top: 0.0, bottom: 0.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Colors.grey,
+                              width: 1.0,
+                              style: BorderStyle.solid),
+                          borderRadius: BorderRadius.circular(5.0),
+                        ),
+                        child: DropdownButton(
+                          isExpanded: true,
+                          underline: SizedBox(),
+                          dropdownColor: Colors.white,
+                          value: yearChoosen,
+                          onChanged: (value) {
+                            setState(() {
+                              yearChoosen = value;
+                            });
+                          },
+                          hint: Text('Select year'),
+                          items: yearString.map((valueItem) {
+                            return DropdownMenuItem(
+                              value: valueItem,
+                              child: Text(valueItem),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 20.0,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 20.0,
+                    ),
+                    Expanded(
+                      child: Container(
+                        margin: EdgeInsets.only(left: 1.0, right: 1.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              String monthChoosenIndexToString =
+                                  '${monthString.indexOf(monthChoosen) + 1}';
+                              print(monthChoosenIndexToString);
+                              print(yearChoosen);
+                              getShortedTimeSheetData(
+                                  monthChoosenIndexToString, yearChoosen);
+                            });
+                          },
+                          child: Text('Get Time Sheet'),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                        child: Container(
+                            margin: EdgeInsets.only(left: 1.0, right: 1.0),
+                            child: ElevatedButton(
+                                onPressed: getTimeSheetData,
+                                child: Text('Reset')))),
+                    SizedBox(
+                      width: 20.0,
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 200.0,
+                ),
+                Center(child: Text('No Data Found')),
+              ],
+            )
+          : ModalProgressHUD(
+              inAsyncCall: showSpinner,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 20.0,
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 40.0,
+                            margin: EdgeInsets.only(top: 5.0, right: 3.0),
+                            padding: EdgeInsets.only(
+                                left: 5.0, right: 5.0, top: 0.0, bottom: 0.0),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Colors.grey,
+                                  width: 1.0,
+                                  style: BorderStyle.solid),
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            child: DropdownButton(
+                              isExpanded: true,
+                              underline: SizedBox(),
+                              dropdownColor: Colors.white,
+                              value: monthChoosen,
+                              onChanged: (value) {
+                                setState(() {
+                                  monthChoosen = value;
+                                });
+                              },
+                              hint: Text('Select Month'),
+                              items: monthString.map(
+                                (valueItem) {
+                                  return DropdownMenuItem(
+                                      value: valueItem, child: Text(valueItem));
+                                },
+                              ).toList(),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 40.0,
+                            margin: EdgeInsets.only(top: 5.0),
+                            padding: EdgeInsets.only(
+                                left: 5.0, right: 5.0, top: 0.0, bottom: 0.0),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Colors.grey,
+                                  width: 1.0,
+                                  style: BorderStyle.solid),
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            child: DropdownButton(
+                              isExpanded: true,
+                              underline: SizedBox(),
+                              dropdownColor: Colors.white,
+                              value: yearChoosen,
+                              onChanged: (value) {
+                                setState(() {
+                                  yearChoosen = value;
+                                });
+                              },
+                              hint: Text('Select year'),
+                              items: yearString.map((valueItem) {
+                                return DropdownMenuItem(
+                                  value: valueItem,
+                                  child: Text(valueItem),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 20.0,
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 20.0,
+                        ),
+                        Expanded(
+                          child: Container(
+                            margin: EdgeInsets.only(left: 1.0, right: 1.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  String monthChoosenIndexToString =
+                                      '${monthString.indexOf(monthChoosen) + 1}';
+                                  print(monthChoosenIndexToString);
+                                  print(yearChoosen);
+                                  getShortedTimeSheetData(
+                                      monthChoosenIndexToString, yearChoosen);
+                                });
+                              },
+                              child: Text('Get Time Sheet'),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                            child: Container(
+                                margin: EdgeInsets.only(left: 1.0, right: 1.0),
+                                child: ElevatedButton(
+                                    onPressed: getTimeSheetData,
+                                    child: Text('Reset')))),
+                        SizedBox(
+                          width: 20.0,
+                        ),
+                      ],
+                    ),
+                    DataTable(
+                      columnSpacing: 20.0,
+                      horizontalMargin: 20.0,
+                      columns: <DataColumn>[
+                        DataColumn(label: Text("Date")),
+                        DataColumn(label: Text("Clock in")),
+                        DataColumn(label: Text("Clock Out")),
+                        DataColumn(label: Text("Total Hour")),
+                      ],
+                      rows: userEntryRecord
+                          .map(
+                            (user) => DataRow(
+                              cells: [
+                                DataCell(
+                                  Center(child: Text(user.userName)),
+                                ),
+                                DataCell(Center(child: Text(user.enterTime))),
+                                DataCell(Center(child: Text(user.exitTime))),
+                                DataCell(Center(
+                                    child: Text(
+                                  user.totalHour,
+                                ))),
+                              ],
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
-}
-
-class UserEntryModel {
-  final String userName;
-  final String enterTime;
-  final String exitTime;
-  final String totalHour;
-  UserEntryModel(this.userName, this.enterTime, this.exitTime, this.totalHour);
 }

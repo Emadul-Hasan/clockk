@@ -1,9 +1,13 @@
 import 'package:clockk/custom_component/inputfield.dart';
+import 'package:clockk/models/AlertModel.dart';
+import 'package:clockk/models/connectivityCheck.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:http/http.dart' as http;
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:http/http.dart' as http;
+
 import 'login.dart';
 
 class PassRecovery extends StatefulWidget {
@@ -19,15 +23,13 @@ class _PassRecoveryState extends State<PassRecovery> {
         context: context,
         title: title,
         content: Column(
-          children: <Widget>[
-
-          ],
+          children: <Widget>[],
         ),
         buttons: [
           DialogButton(
             width: 100.0,
             color: Colors.lightBlueAccent,
-            onPressed: ()  {
+            onPressed: () {
               Navigator.pushReplacementNamed(context, Login.id);
             },
             child: Text(
@@ -37,17 +39,35 @@ class _PassRecoveryState extends State<PassRecovery> {
           )
         ]).show();
   }
+
+  AlertMessage alert = AlertMessage();
+
+  CheckConnectivity _connectivityCheck = CheckConnectivity();
+  void checkConnection() async {
+    String resultString = await _connectivityCheck.checkingConnection();
+    if (resultString != null) {
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, resultString, Colors.red);
+    }
+  }
+
+  @override
+  void initState() {
+    checkConnection();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     String email;
 
     return Scaffold(
         body: ModalProgressHUD(
-          inAsyncCall: showSpinner,
-          child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
+      inAsyncCall: showSpinner,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
           Container(
             child: Center(
               child: Image.asset(
@@ -65,7 +85,7 @@ class _PassRecoveryState extends State<PassRecovery> {
               keyBoardtype: TextInputType.emailAddress,
               prefixicon: Icon(Icons.mail),
               function: (value) {
-               email = value;
+                email = value;
               },
             ),
           ),
@@ -77,7 +97,7 @@ class _PassRecoveryState extends State<PassRecovery> {
                 padding: EdgeInsets.fromLTRB(85.0, 10.0, 85.0, 10.0),
               ),
               child: Text("  Reset Password  "),
-              onPressed: () async{
+              onPressed: () async {
                 setState(() {
                   showSpinner = true;
                 });
@@ -98,22 +118,22 @@ class _PassRecoveryState extends State<PassRecovery> {
                   });
 
                   if (response.statusCode == 200) {
-
                     setState(() {
                       showSpinner = false;
                     });
-                      _onAlertPasswordReset(context, "Reset password request sent to your email");
+                    _onAlertPasswordReset(
+                        context, "Reset password request sent to your email");
                   } else {
                     setState(() {
                       showSpinner = false;
                     });
-                    _onAlertPasswordReset(context, "Something went wrong, Try again!");
+                    _onAlertPasswordReset(
+                        context, "Something went wrong, Try again!");
                     print(response.statusCode);
                   }
                 } catch (e) {
                   print(e);
                 }
-
               },
             ),
           ),
@@ -129,8 +149,8 @@ class _PassRecoveryState extends State<PassRecovery> {
               ),
             ),
           )
-      ],
-    ),
-        ));
+        ],
+      ),
+    ));
   }
 }

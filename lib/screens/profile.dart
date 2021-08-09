@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/custom_component/inputfield.dart';
 import 'package:clockk/models/AlertModel.dart';
+import 'package:clockk/models/connectivityCheck.dart';
 import 'package:clockk/screens/timesheet.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +63,6 @@ class _BodyState extends State<Body> {
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/my_profile";
     var url = Uri.parse(webUrl);
-    print(webUrl);
 
     try {
       http.Response response = await http.get(url, headers: {
@@ -74,7 +73,7 @@ class _BodyState extends State<Body> {
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        print(data);
+
         var value = data['data'];
         name = value['name'];
         email = value['email'];
@@ -133,12 +132,11 @@ class _BodyState extends State<Body> {
             width: 100.0,
             color: Colors.lightBlueAccent,
             onPressed: () async {
-              print("pressed");
               var token = await FlutterSession().get('token');
               String webUrl =
                   "https://clockk.in/api/password_change?old_password=$oldpass&password=$newpass&confirm_password=$confpass";
               var url = Uri.parse(webUrl);
-              print(url);
+
               try {
                 http.Response response = await http.post(url, headers: {
                   'Content-type': 'application/json',
@@ -147,7 +145,7 @@ class _BodyState extends State<Body> {
                 });
 
                 if (response.statusCode == 200) {
-                  print("Done");
+
                   Navigator.pop(context);
                   alert.messageAlert(context, 'Status', MdiIcons.check,
                       "Success", Colors.green);
@@ -223,12 +221,12 @@ class _BodyState extends State<Body> {
             color: Colors.lightBlueAccent,
             onPressed: () async {
               var token = await FlutterSession().get('token');
-              print(token);
+
 
               String webUrl =
                   "https://clockk.in/api/profile_update?name=$name&phone=$phone&address=$address";
               var url = Uri.parse(webUrl);
-              print(webUrl);
+
 
               try {
                 http.Response response = await http.post(url, headers: {
@@ -238,11 +236,10 @@ class _BodyState extends State<Body> {
                 });
 
                 if (response.statusCode == 200) {
-                  print("Done");
+
                   Navigator.pop(context);
                   alert.messageAlert(context, 'Status', MdiIcons.check,
                       "Success", Colors.green);
-
                 } else {
                   Navigator.pop(context);
                   alert.messageAlert(context, 'Status', MdiIcons.close,
@@ -262,8 +259,18 @@ class _BodyState extends State<Body> {
         ]).show();
   }
 
+  CheckConnectivity _connectivityCheck = CheckConnectivity();
+  void checkConnection() async {
+    String resultString = await _connectivityCheck.checkingConnection();
+    if (resultString != null) {
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, resultString, Colors.red);
+    }
+  }
+
   @override
   void initState() {
+    checkConnection();
     getProfileData();
     super.initState();
   }
@@ -276,7 +283,7 @@ class _BodyState extends State<Body> {
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Column(
           children: [
-            ProfilePic(
+            ProfilePicture(
               showSpinner: showProfSpinner,
             ),
             SizedBox(height: 20),
@@ -316,7 +323,7 @@ class _BodyState extends State<Body> {
                 var token = await FlutterSession().get('token');
                 String webUrl = "https://clockk.in/api/logout";
                 var url = Uri.parse(webUrl);
-                print(url);
+
                 try {
                   http.Response response = await http.get(url, headers: {
                     'Content-type': 'application/json',
@@ -325,7 +332,7 @@ class _BodyState extends State<Body> {
                   });
 
                   if (response.statusCode == 200) {
-                    print('Done');
+
                     await FlutterSession().set('token', '');
                     Navigator.pushReplacementNamed(context, Login.id);
                   } else {
@@ -361,32 +368,50 @@ class ProfileMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: FlatButton(
-        padding: EdgeInsets.all(20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        color: Color(0xFFF5F6F9),
-        onPressed: press,
-        child: Row(
-          children: [
-            Icon(icon),
-            SizedBox(width: 20),
-            Expanded(child: Text(text)),
-            Icon(icon2),
-          ],
+      child: Container(
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Color(0xFFF5F6F9),
+          border: Border.all(
+            color: Colors.white,
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: TextButton(
+          onPressed: press,
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: Colors.black,
+              ),
+              SizedBox(width: 20),
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+              Icon(
+                icon2,
+                color: Colors.black,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class ProfilePic extends StatefulWidget {
-  ProfilePic({this.showSpinner});
+class ProfilePicture extends StatefulWidget {
+  ProfilePicture({this.showSpinner});
   bool showSpinner;
   @override
-  _ProfilePicState createState() => _ProfilePicState();
+  _ProfilePictureState createState() => _ProfilePictureState();
 }
 
-class _ProfilePicState extends State<ProfilePic> {
+class _ProfilePictureState extends State<ProfilePicture> {
   Dio dio = new Dio();
   var image;
   File imagePicked;
@@ -424,20 +449,19 @@ class _ProfilePicState extends State<ProfilePic> {
     var getData;
     setState(() {
       getData = FlutterSession().get('image');
-      print(getData);
+
     });
 
     return SizedBox(
       height: 115,
       width: 115,
       child: Stack(
+        clipBehavior: Clip.none,
         fit: StackFit.expand,
-        overflow: Overflow.visible,
         children: [
           FutureBuilder(
               future: getData,
               builder: (context, snapshot) {
-                // print(snapshot.data);
                 return CircleAvatar(
                   backgroundColor: Colors.white,
                   radius: 28.0,
@@ -455,64 +479,70 @@ class _ProfilePicState extends State<ProfilePic> {
             child: SizedBox(
               height: 50,
               width: 50,
-              child: FlatButton(
-                shape: RoundedRectangleBorder(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFFF5F6F9),
+                  border: Border.all(
+                    color: Colors.white,
+                  ),
                   borderRadius: BorderRadius.circular(50),
-                  side: BorderSide(color: Colors.white),
                 ),
-                color: Color(0xFFF5F6F9),
-                onPressed: () async {
-                  pickedImage =
-                      await ImagePicker().getImage(source: ImageSource.gallery);
-                  if (pickedImage != null) {
-                    setState(() {
-                      imagePicked = File(pickedImage.path);
-                      widget.showSpinner = true;
-                    });
-                  }
-                  try {
-                    String fileName = imagePicked.path.split('/').last;
-                    FormData fromdata = new FormData.fromMap({
-                      'image': await MultipartFile.fromFile(imagePicked.path,
-                          filename: fileName,
-                          contentType: MediaType('image', 'png')),
-                      'type': 'image/png'
-                    });
-
-                    var token = await FlutterSession().get('token');
-                    String webUrl =
-                        "https://clockk.in/api/change_profile_picture?image=$fileName";
-                    var url = Uri.parse(webUrl);
-                    print(url);
+                child: TextButton(
+                  onPressed: () async {
+                    pickedImage = await ImagePicker()
+                        .getImage(source: ImageSource.gallery);
+                    if (pickedImage != null) {
+                      setState(() {
+                        imagePicked = File(pickedImage.path);
+                        widget.showSpinner = true;
+                      });
+                    }
                     try {
-                      Response response = await dio.post(webUrl,
-                          data: fromdata,
-                          options: Options(headers: {
-                            'Content-type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': token
-                          }));
+                      String fileName = imagePicked.path.split('/').last;
 
-                      if (response.statusCode == 200) {
-                        print("Done");
+                      FormData fromdata = new FormData.fromMap({
+                        'image': await MultipartFile.fromFile(imagePicked.path,
+                            filename: fileName,
+                            contentType: MediaType('image', 'png')),
+                        'type': 'image/png'
+                      });
 
-                        setState(() {
-                          getProfileData();
-                          widget.showSpinner = false;
-                        });
-                      } else {
-                        print(response.statusCode);
+                      var token = await FlutterSession().get('token');
+                      String webUrl =
+                          "https://clockk.in/api/change_profile_picture?image=$fileName";
+                      var url = Uri.parse(webUrl);
+
+                      try {
+                        Response response = await dio.post(webUrl,
+                            data: fromdata,
+                            options: Options(headers: {
+                              'Content-type': 'application/json',
+                              'Accept': 'application/json',
+                              'Authorization': token
+                            }));
+
+                        if (response.statusCode == 200) {
+
+
+                          setState(() {
+                            getProfileData();
+                            widget.showSpinner = false;
+                          });
+                        } else {
+                          print(response.statusCode);
+                        }
+                      } catch (e) {
+                        print(e);
                       }
                     } catch (e) {
                       print(e);
                     }
-                  } catch (e) {
-                    print(e);
-                  }
-                },
-                child: Icon(
-                  MdiIcons.camera,
-                  size: 20.0,
+                  },
+                  child: Icon(
+                    MdiIcons.camera,
+                    size: 20.0,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),

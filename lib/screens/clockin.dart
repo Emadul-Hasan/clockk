@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:clockk/custom_component/customappbar.dart';
 import 'package:clockk/custom_component/drawerCustomList.dart';
 import 'package:clockk/models/AlertModel.dart';
+import 'package:clockk/models/connectivityCheck.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
@@ -22,8 +23,20 @@ class ClockIn extends StatefulWidget {
 
 class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
   var controller;
+
+  CheckConnectivity _connectivityCheck = CheckConnectivity();
+
+  void checkConnection() async {
+    String resultString = await _connectivityCheck.checkingConnection();
+    if (resultString != null) {
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, resultString, Colors.red);
+    }
+  }
+
   @override
   void initState() {
+    checkConnection();
     getcurrentlocation();
     Timer.periodic(Duration(seconds: 1), (Timer t) => timeUpdate());
     controller =
@@ -75,11 +88,13 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
   void timeUpdate() {
     setState(() {
       timeNow = DateTime.now();
-      formattedTime = "${timeNow.hour}:${timeNow.minute}:${timeNow.second}";
+
+      formattedTime = "${timeNow.hour.toString().padLeft(2,'0')}:${timeNow.minute.toString().padLeft(2,'0')}:${timeNow.second.toString().padLeft(2,'0')}";
     });
   }
 
   bool showSpinner = false;
+
   @override
   Widget build(BuildContext context) {
     int monthNumber = timeNow.month;
@@ -103,7 +118,7 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
                 Container(
                   child: Text(
                     formattedTime == null
-                        ? "${timeNow.hour}:${timeNow.minute}:${timeNow.second}"
+                        ? "${timeNow.hour.toString().padLeft(2,'0')}:${timeNow.minute.toString().padLeft(2,'0')}:${timeNow.second.toString().padLeft(2,'0')}"
                         : formattedTime,
                     style: TextStyle(
                         fontSize: 26.0,
@@ -230,22 +245,27 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
                       alignment: Alignment.center,
                       children: [
                         SizedBox(
-                          height: 80,
-                          width: 80,
+                          height: 120,
+                          width: 120,
                           child: CircularProgressIndicator(
                             semanticsLabel: 'Tap here',
-                            strokeWidth: 6.0,
+                            strokeWidth: 8.0,
                             value: controller.value,
                             backgroundColor: Color(0xFF55A1CD),
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(Colors.blueGrey),
                           ),
                         ),
-                        Icon(
-                          MdiIcons.clockCheckOutline,
-                          color: Color(0xFF55A1CD),
-                          size: 35.0,
-                        )
+                        Text("Tap & Hold",
+                            style: TextStyle(
+                                color: Color(0xFF55A1CD),
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.bold)),
+                        // Icon(
+                        //   MdiIcons.clockCheckOutline,
+                        //   color: Color(0xFF55A1CD),
+                        //   size: 35.0,
+                        // )
                       ],
                     ),
                   ),
