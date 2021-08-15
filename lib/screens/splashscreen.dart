@@ -15,13 +15,11 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     Timer(Duration(seconds: 5), () async {
       dynamic token = await FlutterSession().get('token');
       if (token == null || token == '') {
-        print(token);
         Navigator.pushReplacementNamed(context, Login.id);
       } else {
         Navigator.pushReplacementNamed(context, DashBoard.id);

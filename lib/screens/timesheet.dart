@@ -63,7 +63,6 @@ class _TimeSheetState extends State<TimeSheet> {
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/timesheet";
     var url = Uri.parse(webUrl);
-    print(webUrl);
     try {
       http.Response response = await http.get(url, headers: {
         'Content-type': 'application/json',
@@ -73,12 +72,9 @@ class _TimeSheetState extends State<TimeSheet> {
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        print(data);
         var value = data['data'];
-        print(value);
         for (var item in value) {
           flag = 0;
-          print(item);
           setState(() {
             showSpinner = false;
             userEntryRecord.add(UserEntryModel(
@@ -97,10 +93,12 @@ class _TimeSheetState extends State<TimeSheet> {
           });
         }
       } else {
-        print(response.statusCode);
+        alert.messageAlert(context, "Error", MdiIcons.close,
+            'Something went wrong', Colors.red);
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 
@@ -112,7 +110,6 @@ class _TimeSheetState extends State<TimeSheet> {
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/timesheet?month=$month&year=$year";
     var url = Uri.parse(webUrl);
-    print(webUrl);
     try {
       http.Response response = await http.get(url, headers: {
         'Content-type': 'application/json',
@@ -122,7 +119,6 @@ class _TimeSheetState extends State<TimeSheet> {
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        print(data);
 
         var value = data['data'];
         if (value?.isEmpty ?? true) {
@@ -134,7 +130,6 @@ class _TimeSheetState extends State<TimeSheet> {
           flag = 0;
         }
         for (var item in value) {
-          print(item);
           setState(() {
             showSpinner = false;
             userEntryRecord.add(UserEntryModel(
@@ -153,10 +148,12 @@ class _TimeSheetState extends State<TimeSheet> {
           });
         }
       } else {
-        print(response.statusCode);
+        alert.messageAlert(context, "Error", MdiIcons.close,
+            'Something went wrong', Colors.red);
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 
@@ -281,8 +278,7 @@ class _TimeSheetState extends State<TimeSheet> {
                             setState(() {
                               String monthChoosenIndexToString =
                                   '${monthString.indexOf(monthChoosen) + 1}';
-                              print(monthChoosenIndexToString);
-                              print(yearChoosen);
+
                               getShortedTimeSheetData(
                                   monthChoosenIndexToString, yearChoosen);
                             });
@@ -403,8 +399,6 @@ class _TimeSheetState extends State<TimeSheet> {
                                 setState(() {
                                   String monthChoosenIndexToString =
                                       '${monthString.indexOf(monthChoosen) + 1}';
-                                  print(monthChoosenIndexToString);
-                                  print(yearChoosen);
                                   getShortedTimeSheetData(
                                       monthChoosenIndexToString, yearChoosen);
                                 });

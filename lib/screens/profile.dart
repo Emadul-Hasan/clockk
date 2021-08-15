@@ -85,10 +85,12 @@ class _BodyState extends State<Body> {
           showProfSpinner = false;
         });
       } else {
-        print(response.statusCode);
+        alert.messageAlert(context, "Error", MdiIcons.close,
+            'Something went wrong', Colors.red);
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 
@@ -145,7 +147,6 @@ class _BodyState extends State<Body> {
                 });
 
                 if (response.statusCode == 200) {
-
                   Navigator.pop(context);
                   alert.messageAlert(context, 'Status', MdiIcons.check,
                       "Success", Colors.green);
@@ -153,10 +154,8 @@ class _BodyState extends State<Body> {
                   Navigator.pop(context);
                   alert.messageAlert(context, 'Status', MdiIcons.close,
                       'failed try again', Colors.red);
-                  print(response.statusCode);
                 }
               } catch (e) {
-                print(e);
                 Navigator.pop(context);
               }
             },
@@ -222,11 +221,9 @@ class _BodyState extends State<Body> {
             onPressed: () async {
               var token = await FlutterSession().get('token');
 
-
               String webUrl =
                   "https://clockk.in/api/profile_update?name=$name&phone=$phone&address=$address";
               var url = Uri.parse(webUrl);
-
 
               try {
                 http.Response response = await http.post(url, headers: {
@@ -236,7 +233,6 @@ class _BodyState extends State<Body> {
                 });
 
                 if (response.statusCode == 200) {
-
                   Navigator.pop(context);
                   alert.messageAlert(context, 'Status', MdiIcons.check,
                       "Success", Colors.green);
@@ -244,10 +240,8 @@ class _BodyState extends State<Body> {
                   Navigator.pop(context);
                   alert.messageAlert(context, 'Status', MdiIcons.close,
                       'failed try again', Colors.red);
-                  print(response.statusCode);
                 }
               } catch (e) {
-                print(e);
                 Navigator.pop(context);
               }
             },
@@ -332,14 +326,15 @@ class _BodyState extends State<Body> {
                   });
 
                   if (response.statusCode == 200) {
-
                     await FlutterSession().set('token', '');
                     Navigator.pushReplacementNamed(context, Login.id);
                   } else {
-                    print(response.statusCode);
+                    alert.messageAlert(context, "Error", MdiIcons.close,
+                        'Something went wrong', Colors.red);
                   }
                 } catch (e) {
-                  print(e);
+                  alert.messageAlert(context, "Error", MdiIcons.close,
+                      'Something went wrong', Colors.red);
                 }
               },
             ),
@@ -412,6 +407,7 @@ class ProfilePicture extends StatefulWidget {
 }
 
 class _ProfilePictureState extends State<ProfilePicture> {
+  AlertMessage alert = AlertMessage();
   Dio dio = new Dio();
   var image;
   File imagePicked;
@@ -437,10 +433,12 @@ class _ProfilePictureState extends State<ProfilePicture> {
         });
         await FlutterSession().set('image', image);
       } else {
-        print(response.statusCode);
+        alert.messageAlert(context, "Error", MdiIcons.close,
+            'Something went wrong', Colors.red);
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 
@@ -449,7 +447,6 @@ class _ProfilePictureState extends State<ProfilePicture> {
     var getData;
     setState(() {
       getData = FlutterSession().get('image');
-
     });
 
     return SizedBox(
@@ -510,7 +507,6 @@ class _ProfilePictureState extends State<ProfilePicture> {
                       var token = await FlutterSession().get('token');
                       String webUrl =
                           "https://clockk.in/api/change_profile_picture?image=$fileName";
-                      var url = Uri.parse(webUrl);
 
                       try {
                         Response response = await dio.post(webUrl,
@@ -522,20 +518,21 @@ class _ProfilePictureState extends State<ProfilePicture> {
                             }));
 
                         if (response.statusCode == 200) {
-
-
                           setState(() {
                             getProfileData();
                             widget.showSpinner = false;
                           });
                         } else {
-                          print(response.statusCode);
+                          alert.messageAlert(context, "Error", MdiIcons.close,
+                              'Something went wrong', Colors.red);
                         }
                       } catch (e) {
-                        print(e);
+                        alert.messageAlert(context, "Error", MdiIcons.close,
+                            'Something went wrong', Colors.red);
                       }
                     } catch (e) {
-                      print(e);
+                      alert.messageAlert(context, "Error", MdiIcons.close,
+                          'Something went wrong', Colors.red);
                     }
                   },
                   child: Icon(

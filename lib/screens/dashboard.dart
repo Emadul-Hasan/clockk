@@ -52,8 +52,6 @@ class _DashBoardState extends State<DashBoard> {
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/dashboard";
     var url = Uri.parse(webUrl);
-    print(webUrl);
-
     try {
       http.Response response = await http.get(url, headers: {
         'Content-type': 'application/json',
@@ -79,15 +77,17 @@ class _DashBoardState extends State<DashBoard> {
           taskCompleteNumber = getData[0]['task_done'].toString();
         });
 
-        print(getData);
         setState(() {
           showSpinner = false;
         });
       } else {
-        print(response.statusCode);
+        setState(() {
+          showSpinner = false;
+        });
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 

@@ -37,7 +37,7 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     checkConnection();
-    getcurrentlocation();
+    getCurrentLocation();
     Timer.periodic(Duration(seconds: 1), (Timer t) => timeUpdate());
     controller =
         AnimationController(vsync: this, duration: Duration(seconds: 1));
@@ -50,18 +50,15 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
   double latitube;
   double longitude;
 
-  Future<void> getcurrentlocation() async {
+  Future<void> getCurrentLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.low);
       latitube = position.latitude;
       longitude = position.longitude;
-      print(latitube);
-      print(longitude);
     } catch (e) {
       alert.messageAlert(context, 'title', MdiIcons.alert,
           'Turn on your location and refresh this page', Colors.orange);
-      print(e);
     }
   }
 
@@ -89,7 +86,8 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
     setState(() {
       timeNow = DateTime.now();
 
-      formattedTime = "${timeNow.hour.toString().padLeft(2,'0')}:${timeNow.minute.toString().padLeft(2,'0')}:${timeNow.second.toString().padLeft(2,'0')}";
+      formattedTime =
+          "${timeNow.hour.toString().padLeft(2, '0')}:${timeNow.minute.toString().padLeft(2, '0')}:${timeNow.second.toString().padLeft(2, '0')}";
     });
   }
 
@@ -118,7 +116,7 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
                 Container(
                   child: Text(
                     formattedTime == null
-                        ? "${timeNow.hour.toString().padLeft(2,'0')}:${timeNow.minute.toString().padLeft(2,'0')}:${timeNow.second.toString().padLeft(2,'0')}"
+                        ? "${timeNow.hour.toString().padLeft(2, '0')}:${timeNow.minute.toString().padLeft(2, '0')}:${timeNow.second.toString().padLeft(2, '0')}"
                         : formattedTime,
                     style: TextStyle(
                         fontSize: 26.0,
@@ -141,7 +139,6 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
                   child: FutureBuilder(
                       future: FlutterSession().get('name'),
                       builder: (context, snapshot) {
-                        // print(snapshot.data);
                         return Text(
                           snapshot.hasData
                               ? snapshot.data
@@ -161,7 +158,6 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
                   child: FutureBuilder(
                       future: FlutterSession().get('designation'),
                       builder: (context, snapshot) {
-                        // print(snapshot.data);
                         return Text(
                             snapshot.hasData ? snapshot.data : "Loading...",
                             style: TextStyle(
@@ -179,7 +175,6 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
                     onTapDown: (_) => controller.forward(),
                     onTapUp: (_) async {
                       if (controller.status == AnimationStatus.completed) {
-                        print("Completed");
                         setState(() {
                           showSpinner = true;
                         });
@@ -229,11 +224,10 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
                                 MdiIcons.close,
                                 "Check your internet service",
                                 Colors.red);
-
-                            print(response.body);
                           }
                         } catch (e) {
-                          print(e);
+                          alert.messageAlert(context, "Error", MdiIcons.close,
+                              'Something went wrong', Colors.red);
                         }
                         controller.value = 0.0;
                       }

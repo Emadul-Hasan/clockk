@@ -2,10 +2,11 @@ import 'package:clockk/screens/clockin.dart';
 import 'package:clockk/screens/clockout.dart';
 import 'package:clockk/screens/dashboard.dart';
 import 'package:clockk/screens/login.dart';
-import 'package:clockk/screens/mychecklist.dart';
+import 'package:clockk/screens/morefeature.dart';
+import 'package:clockk/screens/myremainingtaskTitle.dart';
 import 'package:clockk/screens/profile.dart';
 import 'package:clockk/screens/rota.dart';
-import 'package:clockk/screens/teamchecklist.dart';
+import 'package:clockk/screens/teamremainingtaskTitle.dart';
 import 'package:clockk/screens/timesheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
@@ -87,14 +88,14 @@ class _DrawerCustomListState extends State<DrawerCustomList> {
               },
             ),
             CustomListTile(
-                menuTitle: 'Clock in',
+                menuTitle: 'Clock In',
                 icon: MdiIcons.clockCheckOutline,
                 action: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, ClockIn.id);
                 }),
             CustomListTile(
-                menuTitle: 'Clock out',
+                menuTitle: 'Clock Out',
                 icon: MdiIcons.clockFast,
                 action: () {
                   Navigator.of(context).pop();
@@ -105,14 +106,14 @@ class _DrawerCustomListState extends State<DrawerCustomList> {
                 icon: MdiIcons.formatListChecks,
                 action: () {
                   Navigator.of(context).pop();
-                  Navigator.pushNamed(context, MyCheckList.id);
+                  Navigator.pushNamed(context, MyRemainingTaskTitle.id);
                 }),
             CustomListTile(
                 menuTitle: 'Team Checklist',
                 icon: MdiIcons.formatListCheckbox,
                 action: () {
                   Navigator.of(context).pop();
-                  Navigator.pushNamed(context, TeamCheckList.id);
+                  Navigator.pushNamed(context, TeamRemainingTaskTitle.id);
                 }),
             CustomListTile(
                 menuTitle: 'Rota',
@@ -129,11 +130,18 @@ class _DrawerCustomListState extends State<DrawerCustomList> {
                   Navigator.pushNamed(context, ProfileScreen.id);
                 }),
             CustomListTile(
-                menuTitle: 'Time sheet',
+                menuTitle: 'Time Sheet',
                 icon: MdiIcons.calendarOutline,
                 action: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, TimeSheet.id);
+                }),
+            CustomListTile(
+                menuTitle: 'More Features',
+                icon: MdiIcons.web,
+                action: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, MoreFeatures.id);
                 }),
             CustomListTile(
                 menuTitle: 'Logout',

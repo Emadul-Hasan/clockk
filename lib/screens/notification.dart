@@ -23,7 +23,6 @@ class _NotificationsState extends State<Notifications> {
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/notification";
     var url = Uri.parse(webUrl);
-    print(webUrl);
     try {
       http.Response response = await http.get(url, headers: {
         'Content-type': 'application/json',
@@ -36,9 +35,7 @@ class _NotificationsState extends State<Notifications> {
           showSpinner = false;
 
           var data = jsonDecode(response.body);
-          print(data);
           var value = data['data'];
-          print(value);
           if (value?.isEmpty ?? true) {
             flag = 1;
             setState(() {
@@ -53,10 +50,12 @@ class _NotificationsState extends State<Notifications> {
           }
         });
       } else {
-        print(response.statusCode);
+        alert.messageAlert(context, "Error", MdiIcons.close,
+            'Something went wrong', Colors.red);
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 
@@ -69,7 +68,6 @@ class _NotificationsState extends State<Notifications> {
     var token = await FlutterSession().get('token');
     String webUrl = api;
     var url = Uri.parse(webUrl);
-    print(webUrl);
     try {
       http.Response response = await http.get(url, headers: {
         'Content-type': 'application/json',
@@ -100,15 +98,14 @@ class _NotificationsState extends State<Notifications> {
           }
           alert.messageAlert(
               context, 'Status', MdiIcons.check, data['message'], Colors.green);
-          // print(notifications);
         });
       } else {
         alert.messageAlert(
             context, 'Status', MdiIcons.close, 'Failed', Colors.red);
-        print(response.statusCode);
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 

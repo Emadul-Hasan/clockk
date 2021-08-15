@@ -161,8 +161,6 @@ class _LoginState extends State<Login> {
                           MdiIcons.close,
                           "User id or password do not matched",
                           Colors.red);
-
-                      print(response.statusCode);
                     }
                   } catch (e) {
                     setState(() {
@@ -170,8 +168,6 @@ class _LoginState extends State<Login> {
                     });
                     alert.messageAlert(context, "Failed to login",
                         MdiIcons.close, "Check your connectivity", Colors.red);
-
-                    print(e);
                   }
                 },
               ),

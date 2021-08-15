@@ -1,11 +1,18 @@
-class MyTile {
+class MyTask {
   String title;
   String id;
-  List<MyTile> children;
-  bool isDone;
+  String time;
+  String totalCount;
 
-  MyTile(this.title, this.isDone, this.id, [this.children = const <MyTile>[]]);
-  void toggleDone() {
-    isDone = !isDone;
-  }
+  MyTask(this.title, this.id, this.time, this.totalCount);
+}
+
+class MySubTask {
+  String title;
+  String id;
+  bool isDone;
+  String time;
+  bool visible;
+
+  MySubTask({this.title, this.id, this.isDone, this.time});
 }

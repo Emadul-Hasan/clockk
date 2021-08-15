@@ -65,7 +65,8 @@ class _ClockOutState extends State<ClockOut>
   void timeUpdate() {
     setState(() {
       timeNow = DateTime.now();
-      formattedTime = "${timeNow.hour.toString().padLeft(2,'0')}:${timeNow.minute.toString().padLeft(2,'0')}:${timeNow.second.toString().padLeft(2,'0')}";
+      formattedTime =
+          "${timeNow.hour.toString().padLeft(2, '0')}:${timeNow.minute.toString().padLeft(2, '0')}:${timeNow.second.toString().padLeft(2, '0')}";
     });
   }
 
@@ -74,9 +75,6 @@ class _ClockOutState extends State<ClockOut>
 
   @override
   Widget build(BuildContext context) {
-    // int monthNumber = timeNow.month;
-    // String month = monthString[monthNumber];
-    // String ClockInTime = "9.00Am";
     return Scaffold(
       drawer: DrawerCustomList(),
       appBar: CustomAppBar(Text("Clock out"), () {
@@ -93,7 +91,7 @@ class _ClockOutState extends State<ClockOut>
               Container(
                 child: Text(
                   formattedTime == null
-                      ? "${timeNow.hour.toString().padLeft(2,'0')}:${timeNow.minute.toString().padLeft(2,'0')}:${timeNow.second.toString().padLeft(2,'0')}"
+                      ? "${timeNow.hour.toString().padLeft(2, '0')}:${timeNow.minute.toString().padLeft(2, '0')}:${timeNow.second.toString().padLeft(2, '0')}"
                       : formattedTime,
                   style: TextStyle(
                       fontSize: 26.0,
@@ -101,7 +99,6 @@ class _ClockOutState extends State<ClockOut>
                       color: Color(0xFF55A1CD)),
                 ),
               ),
-
               SizedBox(
                 height: 50.0,
               ),
@@ -127,7 +124,6 @@ class _ClockOutState extends State<ClockOut>
                 child: FutureBuilder(
                     future: FlutterSession().get('designation'),
                     builder: (context, snapshot) {
-                      // print(snapshot.data);
                       return Text(
                           snapshot.hasData ? snapshot.data : "Loading...",
                           style: TextStyle(
@@ -152,8 +148,6 @@ class _ClockOutState extends State<ClockOut>
 
                       String webUrl = "https://clockk.in/api/clock_out";
                       var url = Uri.parse(webUrl);
-                      print(webUrl);
-
                       try {
                         http.Response response = await http.post(url, headers: {
                           'Content-type': 'application/json',
@@ -187,11 +181,10 @@ class _ClockOutState extends State<ClockOut>
                               MdiIcons.alert,
                               'Keep active your location and internet service',
                               Colors.orange);
-
-                          print(response.body);
                         }
                       } catch (e) {
-                        print(e);
+                        alert.messageAlert(context, "Error", MdiIcons.close,
+                            'Something went wrong', Colors.red);
                       }
                       controller.value = 0.0;
                     }
@@ -219,11 +212,6 @@ class _ClockOutState extends State<ClockOut>
                               color: Color(0xFF55A1CD),
                               fontSize: 20.0,
                               fontWeight: FontWeight.bold))
-                      // Icon(
-                      //   MdiIcons.clockFast,
-                      //   color: Color(0xFF55A1CD),
-                      //   size: 35.0,
-                      // )
                     ],
                   ),
                 ),

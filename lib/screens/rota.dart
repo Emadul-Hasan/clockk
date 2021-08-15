@@ -26,7 +26,6 @@ class _RotaState extends State<Rota> {
     var token = await FlutterSession().get('token');
     String webUrl = "https://clockk.in/api/rota";
     var url = Uri.parse(webUrl);
-    print(webUrl);
     try {
       http.Response response = await http.get(url, headers: {
         'Content-type': 'application/json',
@@ -36,9 +35,7 @@ class _RotaState extends State<Rota> {
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        // print(data);
         var value = data['data'];
-        // print(value);
         for (var item in value) {
           setState(() {
             flag = 0;
@@ -67,7 +64,8 @@ class _RotaState extends State<Rota> {
             meetings.add(Appointment(
               startTime: taskDateTimeStart,
               endTime: taskDateTimeEnd,
-              subject: '${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]} to ${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]}',
+              subject:
+                  '${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]} to ${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]}',
               color: color[index],
             ));
             if (index == 3) {
@@ -79,10 +77,12 @@ class _RotaState extends State<Rota> {
           });
         }
       } else {
-        print(response.statusCode);
+        alert.messageAlert(context, "Error", MdiIcons.close,
+            'Something went wrong', Colors.red);
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 
@@ -141,7 +141,6 @@ class _RotaState extends State<Rota> {
     String webUrl =
         "https://clockk.in/api/rota?start_date=$fromDate&end_date=$toDate";
     var url = Uri.parse(webUrl);
-    print(webUrl);
     try {
       http.Response response = await http.get(url, headers: {
         'Content-type': 'application/json',
@@ -151,9 +150,7 @@ class _RotaState extends State<Rota> {
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        print(data);
         var value = data['data'];
-        print(value);
         if (value?.isEmpty ?? true) {
           flag = 1;
           setState(() {
@@ -190,7 +187,8 @@ class _RotaState extends State<Rota> {
             meetings.add(Appointment(
               startTime: taskDateTimeStart,
               endTime: taskDateTimeEnd,
-              subject: '${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]} to ${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]}',
+              subject:
+                  '${date[2]}/${date[1]}/${date[0]} ${sTime[0]}:${sTime[1]} to ${date[2]}/${date[1]}/${date[0]} ${eTime[0]}:${eTime[1]}',
               color: color[index],
             ));
             if (index == 3) {
@@ -200,12 +198,13 @@ class _RotaState extends State<Rota> {
             }
           });
         }
-        print(meetings);
       } else {
-        print(response.statusCode);
+        alert.messageAlert(context, "Error", MdiIcons.close,
+            'Something went wrong', Colors.red);
       }
     } catch (e) {
-      print(e);
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
     }
   }
 
@@ -296,8 +295,6 @@ class _RotaState extends State<Rota> {
                             '${startDate.year}-${startDate.month}-${startDate.day}';
                         String dateTo =
                             '${endDate.year}-${endDate.month}-${endDate.day}';
-                        print(dateFrom);
-                        print(dateTo);
                         getShortedRotaData(dateFrom, dateTo);
                       } else {
                         alert.messageAlert(context, 'Error', MdiIcons.alert,

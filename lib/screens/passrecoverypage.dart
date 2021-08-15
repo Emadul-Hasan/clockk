@@ -103,12 +103,10 @@ class _PassRecoveryState extends State<PassRecovery> {
                 });
 
                 var token = await FlutterSession().get('token');
-                print(token);
 
                 String webUrl =
                     "https://clockk.in/api/forgot_password?email=$email";
                 var url = Uri.parse(webUrl);
-                print(webUrl);
 
                 try {
                   http.Response response = await http.post(url, headers: {
@@ -129,10 +127,8 @@ class _PassRecoveryState extends State<PassRecovery> {
                     });
                     _onAlertPasswordReset(
                         context, "Something went wrong, Try again!");
-                    print(response.statusCode);
                   }
                 } catch (e) {
-                  print(e);
                 }
               },
             ),
