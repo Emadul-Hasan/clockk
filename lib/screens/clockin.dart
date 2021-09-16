@@ -12,7 +12,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
+import 'dashboard.dart';
 import 'notification.dart';
 
 class ClockIn extends StatefulWidget {
@@ -27,6 +29,7 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
   CheckConnectivity _connectivityCheck = CheckConnectivity();
 
   void checkConnection() async {
+    print('Checked');
     String resultString = await _connectivityCheck.checkingConnection();
     if (resultString != null) {
       alert.messageAlert(
@@ -34,27 +37,74 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
     }
   }
 
+  messageAlert2(context) {
+    Alert(
+        context: context,
+        title: 'Privacy Alert',
+        style: AlertStyle(
+          titleStyle: TextStyle(
+              fontSize: 1.0,
+              fontWeight: FontWeight.normal,
+              color: Colors.white),
+        ),
+        closeIcon: Icon(MdiIcons.close),
+        content: Center(
+          child: Column(
+            children: [
+              Icon(
+                MdiIcons.alert,
+                color: Colors.orange,
+                size: 50.0,
+              ),
+              SizedBox(
+                height: 3.0,
+              ),
+              Text(
+                'Clockk.in app collects location data to enable "clock in" even when the app is closed or not in use. otherwise your attendance will not taken.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16.0),
+              ),
+            ],
+          ),
+        ),
+        buttons: [
+          DialogButton(
+              child: Text('Accept'),
+              onPressed: () async {
+                Navigator.pop(context);
+                await getCurrentLocation();
+                await onLocationConfirm();
+              }),
+          DialogButton(
+              child: Text('Deny'),
+              onPressed: () {
+                Navigator.pushNamed(context, DashBoard.id);
+              }),
+        ]).show();
+  }
+
   @override
   void initState() {
     checkConnection();
-    getCurrentLocation();
+
     Timer.periodic(Duration(seconds: 1), (Timer t) => timeUpdate());
     controller =
         AnimationController(vsync: this, duration: Duration(seconds: 1));
     controller.addListener(() {
       setState(() {});
     });
+
     super.initState();
   }
 
-  double latitube;
+  double latitude;
   double longitude;
 
   Future<void> getCurrentLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.low);
-      latitube = position.latitude;
+      latitude = position.latitude;
       longitude = position.longitude;
     } catch (e) {
       alert.messageAlert(context, 'title', MdiIcons.alert,
@@ -92,6 +142,51 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
   }
 
   bool showSpinner = false;
+
+  Future<void> onLocationConfirm() async {
+    setState(() {
+      showSpinner = true;
+    });
+    var token = await FlutterSession().get('token');
+    String webUrl =
+        "https://clockk.in/api/clock_in?lat=$latitude&long=$longitude";
+    var url = Uri.parse(webUrl);
+
+    try {
+      http.Response response = await http.post(url, headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token
+      });
+      var body = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          showSpinner = false;
+        });
+        String message = body['message'];
+        alert.messageAlert(context, "Status", MdiIcons.check,
+            message.toString(), Colors.green);
+      } else if (response.statusCode == 404) {
+        setState(() {
+          showSpinner = false;
+        });
+        String message = body['data']['error'];
+        alert.messageAlert(context, "Status", MdiIcons.alert,
+            message.toString(), Colors.orange);
+      } else {
+        setState(() {
+          showSpinner = false;
+        });
+        alert.messageAlert(context, "Status", MdiIcons.close,
+            "Check your internet service", Colors.red);
+      }
+    } catch (e) {
+      alert.messageAlert(
+          context, "Error", MdiIcons.close, 'Something went wrong', Colors.red);
+    }
+    controller.value = 0.0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,61 +270,7 @@ class _ClockInState extends State<ClockIn> with SingleTickerProviderStateMixin {
                     onTapDown: (_) => controller.forward(),
                     onTapUp: (_) async {
                       if (controller.status == AnimationStatus.completed) {
-                        setState(() {
-                          showSpinner = true;
-                        });
-                        var token = await FlutterSession().get('token');
-                        String webUrl =
-                            "https://clockk.in/api/clock_in?lat=$latitube&long=$longitude";
-                        var url = Uri.parse(webUrl);
-
-                        try {
-                          http.Response response =
-                              await http.post(url, headers: {
-                            'Content-type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': token
-                          });
-                          var body = jsonDecode(response.body);
-
-                          if (response.statusCode == 200) {
-                            setState(() {
-                              showSpinner = false;
-                            });
-                            String message = body['message'];
-                            alert.messageAlert(
-                                context,
-                                "Status",
-                                MdiIcons.check,
-                                message.toString(),
-                                Colors.green);
-                          } else if (response.statusCode == 404) {
-                            setState(() {
-                              showSpinner = false;
-                            });
-                            String message = body['data']['error'];
-                            alert.messageAlert(
-                                context,
-                                "Status",
-                                MdiIcons.alert,
-                                message.toString(),
-                                Colors.orange);
-                          } else {
-                            setState(() {
-                              showSpinner = false;
-                            });
-                            alert.messageAlert(
-                                context,
-                                "Status",
-                                MdiIcons.close,
-                                "Check your internet service",
-                                Colors.red);
-                          }
-                        } catch (e) {
-                          alert.messageAlert(context, "Error", MdiIcons.close,
-                              'Something went wrong', Colors.red);
-                        }
-                        controller.value = 0.0;
+                        messageAlert2(context);
                       }
                       if (controller.status == AnimationStatus.forward) {
                         controller.reverse();

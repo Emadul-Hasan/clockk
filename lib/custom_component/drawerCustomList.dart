@@ -1,3 +1,4 @@
+import 'package:clockk/models/AlertModel.dart';
 import 'package:clockk/screens/clockin.dart';
 import 'package:clockk/screens/clockout.dart';
 import 'package:clockk/screens/dashboard.dart';
@@ -25,6 +26,7 @@ class DrawerCustomList extends StatefulWidget {
 }
 
 class _DrawerCustomListState extends State<DrawerCustomList> {
+  AlertMessage alert = AlertMessage();
   @override
   Widget build(BuildContext context) {
     return Drawer(
